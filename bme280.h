@@ -1,13 +1,13 @@
 /** \mainpage
 *
 ****************************************************************************
-* Copyright (C) 2013 - 2014 Bosch Sensortec GmbH
+* Copyright (C) 2013 - 2015 Bosch Sensortec GmbH
 *
 * File : bme280.h
 *
-* Date : 2014/12/12
+* Date : 2015/03/27
 *
-* Revision : 2.0.3(Pressure and Temperature compensation code revision is 1.1
+* Revision : 2.0.4(Pressure and Temperature compensation code revision is 1.1
 *               and Humidity compensation code revision is 1.0)
 *
 * Usage: Sensor Driver for BME280 sensor
@@ -201,6 +201,10 @@ typedef	unsigned char u8;/**< used for unsigned 8bit */
 typedef	unsigned short int u16;/**< used for unsigned 16bit */
 typedef	unsigned int u32;/**< used for unsigned 32bit */
 typedef	unsigned long long int u64;/**< used for unsigned 64bit */
+/*! @brief
+ *	If your machine support 64 bit
+ *	define the MACHINE_64_BIT
+ */
 #define BME280_64BITSUPPORT_PRESENT
 
 /* If your machine support 64 bit
@@ -431,140 +435,43 @@ BME280_BUS_RD_PARAM_TYPE to function calls used inside the API
 /**\name	COMMON USED CONSTANTS      */
 /***************************************************************/
 /* Constants */
-#define BME280_NULL                          0
+#define BME280_NULL                          (0)
 #define BME280_RETURN_FUNCTION_TYPE          s8
-/* right shift definitions*/
-#define SHIFT_RIGHT_1_POSITION				 1
-#define SHIFT_RIGHT_2_POSITION				 2
-#define SHIFT_RIGHT_3_POSITION				 3
-#define SHIFT_RIGHT_4_POSITION				 4
-#define SHIFT_RIGHT_7_POSITION				 7
-#define SHIFT_RIGHT_8_POSITION				 8
-#define SHIFT_RIGHT_10_POSITION				 10
-#define SHIFT_RIGHT_11_POSITION				 11
-#define SHIFT_RIGHT_12_POSITION				 12
-#define SHIFT_RIGHT_13_POSITION				 13
-#define SHIFT_RIGHT_14_POSITION				 14
-#define SHIFT_RIGHT_15_POSITION				 15
-#define SHIFT_RIGHT_18_POSITION				 18
-#define SHIFT_RIGHT_19_POSITION				 19
-#define SHIFT_RIGHT_25_POSITION				 25
-#define SHIFT_RIGHT_33_POSITION				 33
-/* left shift definitions*/
-#define SHIFT_LEFT_1_POSITION                1
-#define SHIFT_LEFT_2_POSITION                2
-#define SHIFT_LEFT_4_POSITION                4
-#define SHIFT_LEFT_5_POSITION                5
-#define SHIFT_LEFT_8_POSITION                8
-#define SHIFT_LEFT_12_POSITION               12
-#define SHIFT_LEFT_13_POSITION               13
-#define SHIFT_LEFT_14_POSITION               14
-#define SHIFT_LEFT_16_POSITION               16
-#define SHIFT_LEFT_17_POSITION               17
-#define SHIFT_LEFT_20_POSITION               20
-#define SHIFT_LEFT_31_POSITION               31
-#define SHIFT_LEFT_35_POSITION               35
-#define SHIFT_LEFT_47_POSITION               47
-/* numeric definitions*/
-#define BME280_ONE_U8X                       1
-#define BME280_TWO_U8X                       2
-#define BME280_THREE_U8X                     3
-#define BME280_FOUR_U8X                      4
-#define BME280_FIVE_U8X                      5
-#define BME280_SEVEN_U8X                     7
-#define BME280_ZERO_U8X                      0
-#define BME280_EIGHT_U8X                     8
-#define BME280_FIVETEEN_U8X                  15
-#define BME280_SIXTEEN_U8X                   16
-#define BME280_TWENTY_FIVE_U8X               25
-#define BME280_TWENTY_SIX_U8X                26
-#define BME280_ONE_TWENTY_EIGHT_U8X          128
+/* shift definitions*/
+#define BME280_SHIFT_BIT_POSITION_BY_01_BIT				(1)
+#define BME280_SHIFT_BIT_POSITION_BY_02_BITS			(2)
+#define BME280_SHIFT_BIT_POSITION_BY_03_BITS			(3)
+#define BME280_SHIFT_BIT_POSITION_BY_04_BITS			(4)
+#define BME280_SHIFT_BIT_POSITION_BY_07_BITS			(7)
+#define BME280_SHIFT_BIT_POSITION_BY_08_BITS			(8)
+#define BME280_SHIFT_BIT_POSITION_BY_10_BITS			(10)
+#define BME280_SHIFT_BIT_POSITION_BY_11_BITS			(11)
+#define BME280_SHIFT_BIT_POSITION_BY_12_BITS			(12)
+#define BME280_SHIFT_BIT_POSITION_BY_13_BITS			(13)
+#define BME280_SHIFT_BIT_POSITION_BY_14_BITS			(14)
+#define BME280_SHIFT_BIT_POSITION_BY_15_BITS			(15)
+#define BME280_SHIFT_BIT_POSITION_BY_16_BITS			(16)
+#define BME280_SHIFT_BIT_POSITION_BY_17_BITS			(17)
+#define BME280_SHIFT_BIT_POSITION_BY_18_BITS			(18)
+#define BME280_SHIFT_BIT_POSITION_BY_19_BITS			(19)
+#define BME280_SHIFT_BIT_POSITION_BY_20_BITS			(20)
+#define BME280_SHIFT_BIT_POSITION_BY_25_BITS			(25)
+#define BME280_SHIFT_BIT_POSITION_BY_31_BITS			(31)
+#define BME280_SHIFT_BIT_POSITION_BY_33_BITS			(33)
+#define BME280_SHIFT_BIT_POSITION_BY_35_BITS			(35)
+#define BME280_SHIFT_BIT_POSITION_BY_47_BITS			(47)
 
-/***************************************************************/
-/**\name	PRESSURE AND TEMPERATURE DEFINITIONS     */
-/***************************************************************/
-#define BME280_TEMP_1_2_2_8_8_0_DATA		122880
-#define BME280_PRESSURE_6_4_0_0_0_DATA		64000
-#define BME280_PRESSURE_3_1_2_5_DATA		3125
-#define BME280_PRESSURE_3_2_7_6_8_DATA		32768
-#define BME280_PRESSURE_1_0_4_8_5_7_6_DATA			1048576
-#define BME280_HEX_PRESSURE_8_0_0_0_0_0_0_0_DATA	0x80000000
-/***************************************************************/
-/**\name	HUMIDITY DEFINITIONS      */
-/***************************************************************/
-#define BME280_HUMIDITY_7_6_8_0_0_DATA				76800
-#define BME280_HUMIDITY_1_6_3_8_4_DATA				16384
-#define BME280_HUMIDITY_3_2_7_6_8_DATA				32768
-#define BME280_HUMIDITY_2_0_9_7_1_5_2_DATA			2097152
-#define BME280_HUMIDITY_8_1_9_2_DATA				8192
-#define BME280_HUMIDITY_4_1_9_4_3_0_4_0_0_DATA		419430400
-/***************************************************************/
-/**\name	CALIBRATION MASK DEFINITION      */
-/***************************************************************/
-#define BME280_HEX_CALIB_0_F_DATA		0x0F
+/* numeric definitions */
+#define	BME280_PRESSURE_TEMPERATURE_CALIB_DATA_LENGTH	    (26)
+#define	BME280_HUMIDITY_CALIB_DATA_LENGTH	    (7)
+#define	BME280_GEN_READ_WRITE_DATA_LENGTH		(1)
+#define	BME280_HUMIDITY_DATA_LENGTH				(2)
+#define	BME280_TEMPERATURE_DATA_LENGTH			(3)
+#define	BME280_PRESSURE_DATA_LENGTH				(3)
+#define	BME280_ALL_DATA_FRAME_LENGTH			(8)
+#define	BME280_INIT_VALUE						(0)
+#define	BME280_INVALID_DATA						(0)
 
-/****************************************************/
-/**\name	TRUE TEMPERATURE CALUCULATION PARAMETERS  */
-/***************************************************/
-#define BME280_DEC_TRUE_TEMP_FIVE_DATA					5
-#define BME280_DEC_TRUE_TEMP_ONE_TWO_EIGHT_DATA			128
-/****************************************************/
-/**\name	TRUE PRESSURE CALUCULATION PARAMETERS  */
-/***************************************************/
-#define BME280_DEC_TRUE_PRESSURE_6_4_0_0_0_DATA			64000
-#define BME280_DEC_TRUE_PRESSURE_TWO_DATA				2
-#define BME280_DEC_TRUE_PRESSURE_3_2_7_6_8_DATA			32768
-#define BME280_DEC_TRUE_PRESSURE_1_0_4_8_5_7_6_DATA		1048576
-#define BME280_DEC_TRUE_PRESSURE_3_1_2_5_DATA			3125
-#define BME280_HEX_TRUE_PRESSURE_8_0_0_0_0_0_0_0_DATA	0x80000000
-
-/****************************************************/
-/**\name	TRUE TEMPERATURE CALUCULATION FLOAT RETURN  */
-/***************************************************/
-#define BME280_FLOAT_TRUE_TEMP_1_6_3_8_4_DATA		16384.0
-#define BME280_FLOAT_TRUE_TEMP_1_0_2_4_DATA			1024.0
-#define BME280_FLOAT_TRUE_TEMP_1_3_1_0_7_2_DATA		131072.0
-#define BME280_FLOAT_TRUE_TEMP_8_1_9_2_DATA			8192.0
-#define BME280_FLOAT_TRUE_TEMP_5_1_2_0_DATA			5120.0
-
-/****************************************************/
-/**\name	TRUE PRESSURE CALUCULATION FLOAT RETURN  */
-/***************************************************/
-#define	BME280_FLAOT_TRUE_PRESSURE_1_DATA		1.0
-#define	BME280_FLAOT_TRUE_PRESSURE_0_DATA		0.0
-#define	BME280_FLAOT_TRUE_PRESSURE_2_DATA		2.0
-#define	BME280_FLAOT_TRUE_PRESSURE_4_DATA		4.0
-#define	BME280_FLAOT_TRUE_PRESSURE_1_6_DATA				16.0
-#define	BME280_FLAOT_TRUE_PRESSURE_6_4_0_0_0_DATA		64000.0
-#define	BME280_FLAOT_TRUE_PRESSURE_3_2_7_6_8_DATA		32768.0
-#define	BME280_FLAOT_TRUE_PRESSURE_6_5_5_3_6_DATA		65536.0
-#define	BME280_FLAOT_TRUE_PRESSURE_5_2_4_2_8_8_DATA		524288.0
-#define	BME280_FLAOT_TRUE_PRESSURE_1_0_4_8_5_7_6_DATA	1048576.0
-#define	BME280_FLAOT_TRUE_PRESSURE_4_0_9_6_DATA			4096.0
-#define	BME280_FLAOT_TRUE_PRESSURE_6_2_5_0_DATA			6250.0
-#define	BME280_FLAOT_TRUE_PRESSURE_2_1_4_7_4_8_3_6_4_8_DATA		\
-2147483648.0
-
-/****************************************************/
-/**\name	TRUE PRESSURE CALUCULATION 64BIT RETURN  */
-/***************************************************/
-#define BME280_TRUE_PRESSURE_1_2_8_0_0_0_DATA		128000
-#define BME280_TRUE_PRESSURE_1_0_4_8_5_7_6_DATA		1048576
-#define BME280_TRUE_PRESSURE_3_1_2_5_DATA			3125
-#define BME280_TRUE_PRESSURE_1_DATA					1
-/****************************************************/
-/**\name	TRUE HUMIDITY CALUCULATION FLOAT RETURN  */
-/***************************************************/
-#define BME280_TRUE_HUMIDITY_7_6_8_0_0_DATA			76800.0
-#define BME280_TRUE_HUMIDITY_6_4_DATA				64.0
-#define BME280_TRUE_HUMIDITY_1_6_3_8_4_DATA			16384.0
-#define BME280_TRUE_HUMIDITY_6_5_5_3_6_DATA			65536.0
-#define BME280_TRUE_HUMIDITY_0_DATA					0.0
-#define BME280_TRUE_HUMIDITY_1_DATA					1.0
-#define BME280_TRUE_HUMIDITY_1_0_0_DATA				100.0
-#define BME280_TRUE_HUMIDITY_6_7_1_0_8_8_6_4_DATA	67108864.0
-#define BME280_TRUE_HUMIDITY_5_2_4_2_8_8_DATA		524288.0
-#define BME280_TRUE_HUMIDITY_
 /****************************************************/
 /**\name	ERROR CODE DEFINITIONS  */
 /***************************************************/
@@ -576,44 +483,44 @@ BME280_BUS_RD_PARAM_TYPE to function calls used inside the API
 /****************************************************/
 /**\name	I2C ADDRESS DEFINITIONS  */
 /***************************************************/
-#define BME280_I2C_ADDRESS1                  0x76
-#define BME280_I2C_ADDRESS2                  0x77
+#define BME280_I2C_ADDRESS1                  (0x76)
+#define BME280_I2C_ADDRESS2                  (0x77)
 /****************************************************/
 /**\name	POWER MODE DEFINITIONS  */
 /***************************************************/
 /* Sensor Specific constants */
-#define BME280_SLEEP_MODE                    0x00
-#define BME280_FORCED_MODE                   0x01
-#define BME280_NORMAL_MODE                   0x03
-#define BME280_SOFT_RESET_CODE               0xB6
+#define BME280_SLEEP_MODE                    (0x00)
+#define BME280_FORCED_MODE                   (0x01)
+#define BME280_NORMAL_MODE                   (0x03)
+#define BME280_SOFT_RESET_CODE               (0xB6)
 /****************************************************/
 /**\name	STANDBY DEFINITIONS  */
 /***************************************************/
-#define BME280_STANDBY_TIME_1_MS              0x00
-#define BME280_STANDBY_TIME_63_MS             0x01
-#define BME280_STANDBY_TIME_125_MS			  0x02
-#define BME280_STANDBY_TIME_250_MS            0x03
-#define BME280_STANDBY_TIME_500_MS            0x04
-#define BME280_STANDBY_TIME_1000_MS           0x05
-#define BME280_STANDBY_TIME_10_MS             0x06
-#define BME280_STANDBY_TIME_20_MS             0x07
+#define BME280_STANDBY_TIME_1_MS              (0x00)
+#define BME280_STANDBY_TIME_63_MS             (0x01)
+#define BME280_STANDBY_TIME_125_MS			  (0x02)
+#define BME280_STANDBY_TIME_250_MS            (0x03)
+#define BME280_STANDBY_TIME_500_MS            (0x04)
+#define BME280_STANDBY_TIME_1000_MS           (0x05)
+#define BME280_STANDBY_TIME_10_MS             (0x06)
+#define BME280_STANDBY_TIME_20_MS             (0x07)
 /****************************************************/
 /**\name	OVER SAMPLING DEFINITIONS  */
 /***************************************************/
-#define BME280_OVERSAMP_SKIPPED          0x00
-#define BME280_OVERSAMP_1X               0x01
-#define BME280_OVERSAMP_2X               0x02
-#define BME280_OVERSAMP_4X               0x03
-#define BME280_OVERSAMP_8X               0x04
-#define BME280_OVERSAMP_16X              0x05
+#define BME280_OVERSAMP_SKIPPED          (0x00)
+#define BME280_OVERSAMP_1X               (0x01)
+#define BME280_OVERSAMP_2X               (0x02)
+#define BME280_OVERSAMP_4X               (0x03)
+#define BME280_OVERSAMP_8X               (0x04)
+#define BME280_OVERSAMP_16X              (0x05)
 /****************************************************/
 /**\name	WORK MODE DEFINITIONS  */
 /***************************************************/
-/*#define BME280_ULTRALOWPOWER_MODE            0x00
-#define BME280_LOWPOWER_MODE                 0x01
-#define BME280_STANDARDRESOLUTION_MODE       0x02
-#define BME280_HIGHRESOLUTION_MODE           0x03
-#define BME280_ULTRAHIGHRESOLUTION_MODE      0x04
+/*#define BME280_ULTRALOWPOWER_MODE          (0x00)
+#define BME280_LOWPOWER_MODE                 (0x01)
+#define BME280_STANDARDRESOLUTION_MODE       (0x02)
+#define BME280_HIGHRESOLUTION_MODE           (0x03)
+#define BME280_ULTRAHIGHRESOLUTION_MODE      (0x04)
 
 #define BME280_ULTRALOWPOWER_OSRS_P          BME280_OVERSAMP_1X
 #define BME280_ULTRALOWPOWER_OSRS_T          BME280_OVERSAMP_1X
@@ -634,216 +541,232 @@ BME280_BUS_RD_PARAM_TYPE to function calls used inside the API
 /****************************************************/
 /**\name	FILTER DEFINITIONS  */
 /***************************************************/
-#define BME280_FILTER_COEFF_OFF               0x00
-#define BME280_FILTER_COEFF_2                 0x01
-#define BME280_FILTER_COEFF_4                 0x02
-#define BME280_FILTER_COEFF_8                 0x03
-#define BME280_FILTER_COEFF_16                0x04
+#define BME280_FILTER_COEFF_OFF               (0x00)
+#define BME280_FILTER_COEFF_2                 (0x01)
+#define BME280_FILTER_COEFF_4                 (0x02)
+#define BME280_FILTER_COEFF_8                 (0x03)
+#define BME280_FILTER_COEFF_16                (0x04)
 /****************************************************/
 /**\name	DELAY DEFINITIONS  */
 /***************************************************/
-#define T_INIT_MAX                             20
+#define T_INIT_MAX                             (20)
 		/* 20/16 = 1.25 ms */
-#define T_MEASURE_PER_OSRS_MAX                 37
+#define T_MEASURE_PER_OSRS_MAX                 (37)
 		/* 37/16 = 2.3125 ms*/
 
-#define T_SETUP_PRESSURE_MAX                   10
+#define T_SETUP_PRESSURE_MAX                   (10)
 		/* 10/16 = 0.625 ms */
 
-#define T_SETUP_HUMIDITY_MAX                   10
+#define T_SETUP_HUMIDITY_MAX                   (10)
 		/* 10/16 = 0.625 ms */
 /****************************************************/
-/**\name	ARRAY SIZE DEFINITIONS      */
+/**\name	DEFINITIONS FOR ARRAY SIZE OF DATA   */
 /***************************************************/
-#define ARRAY_SIZE_TWO		2
-#define ARRAY_SIZE_THREE	3
-#define ARRAY_SIZE_SIX		6
-#define ARRAY_SIZE_FIVE		5
-#define ARRAY_SIZE_EIGHT	8
-#define ARRAY_SIZE_TWELVE	12
-#define ARRAY_SIZE_FOURTEEN	14
-#define ARRAY_SIZE_TWENTY_SIX	26
+#define	BME280_HUMIDITY_DATA_SIZE		(2)
+#define	BME280_TEMPERATURE_DATA_SIZE	(3)
+#define	BME280_PRESSURE_DATA_SIZE		(3)
+#define	BME280_DATA_FRAME_SIZE			(8)
+/**< data frames includes temperature,
+pressure and humidity*/
+#define	BME280_CALIB_DATA_SIZE			(26)
 
-#define INDEX_ZERO		0
-#define INDEX_ONE		1
-#define INDEX_TWO		2
-#define INDEX_THREE		3
-#define INDEX_FOUR		4
-#define INDEX_FIVE		5
-#define INDEX_SIX		6
-#define INDEX_SEVEN		7
-#define INDEX_EIGHT		8
-#define INDEX_NINE		9
-#define INDEX_TEN		10
-#define INDEX_ELEVEN	11
-#define INDEX_TWELVE	12
-#define INDEX_THIRTEEN	13
-#define INDEX_FOURTEEN	14
-#define INDEX_FIVETEEN	15
-#define INDEX_SIXTEEN	16
-#define INDEX_SEVENTEEN	17
-#define INDEX_EIGHTEEN	18
-#define INDEX_NINETEEN	19
-#define INDEX_TWENTY	20
-#define INDEX_TWENTY_ONE	21
-#define INDEX_TWENTY_TWO	22
-#define INDEX_TWENTY_THREE	23
-#define INDEX_TWENTY_FIVE	25
+#define	BME280_TEMPERATURE_MSB_DATA		(0)
+#define	BME280_TEMPERATURE_LSB_DATA		(1)
+#define	BME280_TEMPERATURE_XLSB_DATA	(2)
+#define	BME280_PRESSURE_MSB_DATA		(0)
+#define	BME280_PRESSURE_LSB_DATA		(1)
+#define	BME280_PRESSURE_XLSB_DATA	    (2)
+#define	BME280_HUMIDITY_MSB_DATA		(0)
+#define	BME280_HUMIDITY_LSB_DATA		(1)
+
+#define	BME280_DATA_FRAME_PRESSURE_MSB_BYTE	    (0)
+#define	BME280_DATA_FRAME_PRESSURE_LSB_BYTE		(1)
+#define	BME280_DATA_FRAME_PRESSURE_XLSB_BYTE	(2)
+#define	BME280_DATA_FRAME_TEMPERATURE_MSB_BYTE	(3)
+#define	BME280_DATA_FRAME_TEMPERATURE_LSB_BYTE	(4)
+#define	BME280_DATA_FRAME_TEMPERATURE_XLSB_BYTE	(5)
+#define	BME280_DATA_FRAME_HUMIDITY_MSB_BYTE		(6)
+#define	BME280_DATA_FRAME_HUMIDITY_LSB_BYTE		(7)
 /****************************************************/
-/**\name	ARRAY PARAMETERS      */
+/**\name	ARRAY PARAMETER FOR CALIBRATION     */
 /***************************************************/
-#define LSB_ZERO	0
-#define MSB_ONE		1
-#define LSB_TWO		2
-#define MSB_THREE	3
-#define LSB_FOUR	4
-#define MSB_FIVE	5
-#define LSB_SIX		6
-#define MSB_SEVEN	7
+#define	BME280_TEMPERATURE_CALIB_DIG_T1_LSB		(0)
+#define	BME280_TEMPERATURE_CALIB_DIG_T1_MSB		(1)
+#define	BME280_TEMPERATURE_CALIB_DIG_T2_LSB		(2)
+#define	BME280_TEMPERATURE_CALIB_DIG_T2_MSB		(3)
+#define	BME280_TEMPERATURE_CALIB_DIG_T3_LSB		(4)
+#define	BME280_TEMPERATURE_CALIB_DIG_T3_MSB		(5)
+#define	BME280_PRESSURE_CALIB_DIG_P1_LSB       (6)
+#define	BME280_PRESSURE_CALIB_DIG_P1_MSB       (7)
+#define	BME280_PRESSURE_CALIB_DIG_P2_LSB       (8)
+#define	BME280_PRESSURE_CALIB_DIG_P2_MSB       (9)
+#define	BME280_PRESSURE_CALIB_DIG_P3_LSB       (10)
+#define	BME280_PRESSURE_CALIB_DIG_P3_MSB       (11)
+#define	BME280_PRESSURE_CALIB_DIG_P4_LSB       (12)
+#define	BME280_PRESSURE_CALIB_DIG_P4_MSB       (13)
+#define	BME280_PRESSURE_CALIB_DIG_P5_LSB       (14)
+#define	BME280_PRESSURE_CALIB_DIG_P5_MSB       (15)
+#define	BME280_PRESSURE_CALIB_DIG_P6_LSB       (16)
+#define	BME280_PRESSURE_CALIB_DIG_P6_MSB       (17)
+#define	BME280_PRESSURE_CALIB_DIG_P7_LSB       (18)
+#define	BME280_PRESSURE_CALIB_DIG_P7_MSB       (19)
+#define	BME280_PRESSURE_CALIB_DIG_P8_LSB       (20)
+#define	BME280_PRESSURE_CALIB_DIG_P8_MSB       (21)
+#define	BME280_PRESSURE_CALIB_DIG_P9_LSB       (22)
+#define	BME280_PRESSURE_CALIB_DIG_P9_MSB       (23)
+#define	BME280_HUMIDITY_CALIB_DIG_H1           (25)
+#define	BME280_HUMIDITY_CALIB_DIG_H2_LSB		(0)
+#define	BME280_HUMIDITY_CALIB_DIG_H2_MSB		(1)
+#define	BME280_HUMIDITY_CALIB_DIG_H3			(2)
+#define	BME280_HUMIDITY_CALIB_DIG_H4_MSB		(3)
+#define	BME280_HUMIDITY_CALIB_DIG_H4_LSB		(4)
+#define	BME280_HUMIDITY_CALIB_DIG_H5_MSB		(5)
+#define	BME280_HUMIDITY_CALIB_DIG_H6			(6)
+#define	BME280_MASK_DIG_H4		(0x0F)
 /****************************************************/
 /**\name	CALIBRATION REGISTER ADDRESS DEFINITIONS  */
 /***************************************************/
 /*calibration parameters */
-#define BME280_DIG_T1_LSB_REG                0x88
-#define BME280_DIG_T1_MSB_REG                0x89
-#define BME280_DIG_T2_LSB_REG                0x8A
-#define BME280_DIG_T2_MSB_REG                0x8B
-#define BME280_DIG_T3_LSB_REG                0x8C
-#define BME280_DIG_T3_MSB_REG                0x8D
-#define BME280_DIG_P1_LSB_REG                0x8E
-#define BME280_DIG_P1_MSB_REG                0x8F
-#define BME280_DIG_P2_LSB_REG                0x90
-#define BME280_DIG_P2_MSB_REG                0x91
-#define BME280_DIG_P3_LSB_REG                0x92
-#define BME280_DIG_P3_MSB_REG                0x93
-#define BME280_DIG_P4_LSB_REG                0x94
-#define BME280_DIG_P4_MSB_REG                0x95
-#define BME280_DIG_P5_LSB_REG                0x96
-#define BME280_DIG_P5_MSB_REG                0x97
-#define BME280_DIG_P6_LSB_REG                0x98
-#define BME280_DIG_P6_MSB_REG                0x99
-#define BME280_DIG_P7_LSB_REG                0x9A
-#define BME280_DIG_P7_MSB_REG                0x9B
-#define BME280_DIG_P8_LSB_REG                0x9C
-#define BME280_DIG_P8_MSB_REG                0x9D
-#define BME280_DIG_P9_LSB_REG                0x9E
-#define BME280_DIG_P9_MSB_REG                0x9F
+#define BME280_TEMPERATURE_CALIB_DIG_T1_LSB_REG             (0x88)
+#define BME280_TEMPERATURE_CALIB_DIG_T1_MSB_REG             (0x89)
+#define BME280_TEMPERATURE_CALIB_DIG_T2_LSB_REG             (0x8A)
+#define BME280_TEMPERATURE_CALIB_DIG_T2_MSB_REG             (0x8B)
+#define BME280_TEMPERATURE_CALIB_DIG_T3_LSB_REG             (0x8C)
+#define BME280_TEMPERATURE_CALIB_DIG_T3_MSB_REG             (0x8D)
+#define BME280_PRESSURE_CALIB_DIG_P1_LSB_REG                (0x8E)
+#define BME280_PRESSURE_CALIB_DIG_P1_MSB_REG                (0x8F)
+#define BME280_PRESSURE_CALIB_DIG_P2_LSB_REG                (0x90)
+#define BME280_PRESSURE_CALIB_DIG_P2_MSB_REG                (0x91)
+#define BME280_PRESSURE_CALIB_DIG_P3_LSB_REG                (0x92)
+#define BME280_PRESSURE_CALIB_DIG_P3_MSB_REG                (0x93)
+#define BME280_PRESSURE_CALIB_DIG_P4_LSB_REG                (0x94)
+#define BME280_PRESSURE_CALIB_DIG_P4_MSB_REG                (0x95)
+#define BME280_PRESSURE_CALIB_DIG_P5_LSB_REG                (0x96)
+#define BME280_PRESSURE_CALIB_DIG_P5_MSB_REG                (0x97)
+#define BME280_PRESSURE_CALIB_DIG_P6_LSB_REG                (0x98)
+#define BME280_PRESSURE_CALIB_DIG_P6_MSB_REG                (0x99)
+#define BME280_PRESSURE_CALIB_DIG_P7_LSB_REG                (0x9A)
+#define BME280_PRESSURE_CALIB_DIG_P7_MSB_REG                (0x9B)
+#define BME280_PRESSURE_CALIB_DIG_P8_LSB_REG                (0x9C)
+#define BME280_PRESSURE_CALIB_DIG_P8_MSB_REG                (0x9D)
+#define BME280_PRESSURE_CALIB_DIG_P9_LSB_REG                (0x9E)
+#define BME280_PRESSURE_CALIB_DIG_P9_MSB_REG                (0x9F)
 
-#define BME280_DIG_H1_REG                    0xA1
+#define BME280_HUMIDITY_CALIB_DIG_H1_REG                    (0xA1)
 
-#define BME280_DIG_H2_LSB_REG                0xE1
-#define BME280_DIG_H2_MSB_REG                0xE2
-#define BME280_DIG_H3_REG                    0xE3
-#define BME280_DIG_H4_MSB_REG                0xE4
-#define BME280_DIG_H5_LSB_H4_LSB_REG         0xE5
-#define BME280_DIG_H5_MSB_REG                0xE6
-#define BME280_DIG_H6_REG                    0xE7
+#define BME280_HUMIDITY_CALIB_DIG_H2_LSB_REG                (0xE1)
+#define BME280_HUMIDITY_CALIB_DIG_H2_MSB_REG                (0xE2)
+#define BME280_HUMIDITY_CALIB_DIG_H3_REG                    (0xE3)
+#define BME280_HUMIDITY_CALIB_DIG_H4_MSB_REG                (0xE4)
+#define BME280_HUMIDITY_CALIB_DIG_H4_LSB_REG                (0xE5)
+#define BME280_HUMIDITY_CALIB_DIG_H5_MSB_REG                (0xE6)
+#define BME280_HUMIDITY_CALIB_DIG_H6_REG                    (0xE7)
 /****************************************************/
 /**\name	REGISTER ADDRESS DEFINITIONS  */
 /***************************************************/
-#define BME280_CHIP_ID_REG                   0xD0  /*Chip ID Register */
-#define BME280_RST_REG                       0xE0  /*Softreset Register */
-#define BME280_STAT_REG                      0xF3  /*Status Register */
-#define BME280_CTRL_MEAS_REG                 0xF4  /*Ctrl Measure Register */
-#define BME280_CTRL_HUMIDITY_REG             0xF2  /*Ctrl Humidity Register*/
-#define BME280_CONFIG_REG                    0xF5  /*Configuration Register */
-#define BME280_PRESSURE_MSB_REG              0xF7  /*Pressure MSB Register */
-#define BME280_PRESSURE_LSB_REG              0xF8  /*Pressure LSB Register */
-#define BME280_PRESSURE_XLSB_REG             0xF9  /*Pressure XLSB Register */
-#define BME280_TEMPERATURE_MSB_REG           0xFA  /*Temperature MSB Reg */
-#define BME280_TEMPERATURE_LSB_REG           0xFB  /*Temperature LSB Reg */
-#define BME280_TEMPERATURE_XLSB_REG          0xFC  /*Temperature XLSB Reg */
-#define BME280_HUMIDITY_MSB_REG              0xFD  /*Humidity MSB Reg */
-#define BME280_HUMIDITY_LSB_REG              0xFE  /*Humidity LSB Reg */
+#define BME280_CHIP_ID_REG                   (0xD0)  /*Chip ID Register */
+#define BME280_RST_REG                       (0xE0)  /*Softreset Register */
+#define BME280_STAT_REG                      (0xF3)  /*Status Register */
+#define BME280_CTRL_MEAS_REG                 (0xF4)  /*Ctrl Measure Register */
+#define BME280_CTRL_HUMIDITY_REG             (0xF2)  /*Ctrl Humidity Register*/
+#define BME280_CONFIG_REG                    (0xF5)  /*Configuration Register */
+#define BME280_PRESSURE_MSB_REG              (0xF7)  /*Pressure MSB Register */
+#define BME280_PRESSURE_LSB_REG              (0xF8)  /*Pressure LSB Register */
+#define BME280_PRESSURE_XLSB_REG             (0xF9)  /*Pressure XLSB Register */
+#define BME280_TEMPERATURE_MSB_REG           (0xFA)  /*Temperature MSB Reg */
+#define BME280_TEMPERATURE_LSB_REG           (0xFB)  /*Temperature LSB Reg */
+#define BME280_TEMPERATURE_XLSB_REG          (0xFC)  /*Temperature XLSB Reg */
+#define BME280_HUMIDITY_MSB_REG              (0xFD)  /*Humidity MSB Reg */
+#define BME280_HUMIDITY_LSB_REG              (0xFE)  /*Humidity LSB Reg */
 /****************************************************/
 /**\name	BIT MASK, LENGTH AND POSITION DEFINITIONS  */
 /***************************************************/
 /* Status Register */
-#define BME280_STAT_REG_MEASURING__POS           3
-#define BME280_STAT_REG_MEASURING__MSK           0x08
-#define BME280_STAT_REG_MEASURING__LEN           1
-#define BME280_STAT_REG_MEASURING__REG           BME280_STAT_REG
+#define BME280_STAT_REG_MEASURING__POS           (3)
+#define BME280_STAT_REG_MEASURING__MSK           (0x08)
+#define BME280_STAT_REG_MEASURING__LEN           (1)
+#define BME280_STAT_REG_MEASURING__REG           (BME280_STAT_REG)
 
-#define BME280_STAT_REG_IM_UPDATE__POS            0
-#define BME280_STAT_REG_IM_UPDATE__MSK            0x01
-#define BME280_STAT_REG_IM_UPDATE__LEN            1
-#define BME280_STAT_REG_IM_UPDATE__REG            BME280_STAT_REG
+#define BME280_STAT_REG_IM_UPDATE__POS            (0)
+#define BME280_STAT_REG_IM_UPDATE__MSK            (0x01)
+#define BME280_STAT_REG_IM_UPDATE__LEN            (1)
+#define BME280_STAT_REG_IM_UPDATE__REG            (BME280_STAT_REG)
 /****************************************************/
 /**\name	BIT MASK, LENGTH AND POSITION DEFINITIONS
 FOR TEMPERATURE OVERSAMPLING  */
 /***************************************************/
 /* Control Measurement Register */
-#define BME280_CTRL_MEAS_REG_OVERSAMP_TEMPERATURE__POS             5
-#define BME280_CTRL_MEAS_REG_OVERSAMP_TEMPERATURE__MSK             0xE0
-#define BME280_CTRL_MEAS_REG_OVERSAMP_TEMPERATURE__LEN             3
+#define BME280_CTRL_MEAS_REG_OVERSAMP_TEMPERATURE__POS             (5)
+#define BME280_CTRL_MEAS_REG_OVERSAMP_TEMPERATURE__MSK             (0xE0)
+#define BME280_CTRL_MEAS_REG_OVERSAMP_TEMPERATURE__LEN             (3)
 #define BME280_CTRL_MEAS_REG_OVERSAMP_TEMPERATURE__REG             \
-BME280_CTRL_MEAS_REG
+(BME280_CTRL_MEAS_REG)
 /****************************************************/
 /**\name	BIT MASK, LENGTH AND POSITION DEFINITIONS
 FOR PRESSURE OVERSAMPLING  */
 /***************************************************/
-#define BME280_CTRL_MEAS_REG_OVERSAMP_PRESSURE__POS             2
-#define BME280_CTRL_MEAS_REG_OVERSAMP_PRESSURE__MSK             0x1C
-#define BME280_CTRL_MEAS_REG_OVERSAMP_PRESSURE__LEN             3
+#define BME280_CTRL_MEAS_REG_OVERSAMP_PRESSURE__POS             (2)
+#define BME280_CTRL_MEAS_REG_OVERSAMP_PRESSURE__MSK             (0x1C)
+#define BME280_CTRL_MEAS_REG_OVERSAMP_PRESSURE__LEN             (3)
 #define BME280_CTRL_MEAS_REG_OVERSAMP_PRESSURE__REG             \
-BME280_CTRL_MEAS_REG
+(BME280_CTRL_MEAS_REG)
 /****************************************************/
 /**\name	BIT MASK, LENGTH AND POSITION DEFINITIONS
 FOR POWER MODE  */
 /***************************************************/
-#define BME280_CTRL_MEAS_REG_POWER_MODE__POS              0
-#define BME280_CTRL_MEAS_REG_POWER_MODE__MSK              0x03
-#define BME280_CTRL_MEAS_REG_POWER_MODE__LEN              2
+#define BME280_CTRL_MEAS_REG_POWER_MODE__POS              (0)
+#define BME280_CTRL_MEAS_REG_POWER_MODE__MSK              (0x03)
+#define BME280_CTRL_MEAS_REG_POWER_MODE__LEN              (2)
 #define BME280_CTRL_MEAS_REG_POWER_MODE__REG              \
-BME280_CTRL_MEAS_REG
+(BME280_CTRL_MEAS_REG)
 /****************************************************/
 /**\name	BIT MASK, LENGTH AND POSITION DEFINITIONS
 FOR HUMIDITY OVERSAMPLING  */
 /***************************************************/
-#define BME280_CTRL_HUMIDITY_REG_OVERSAM_HUMIDITY__POS             0
-#define BME280_CTRL_HUMIDITY_REG_OVERSAM_HUMIDITY__MSK             0x07
-#define BME280_CTRL_HUMIDITY_REG_OVERSAM_HUMIDITY__LEN             3
-#define BME280_CTRL_HUMIDITY_REG_OVERSAM_HUMIDITY__REG            \
-BME280_CTRL_HUMIDITY_REG
+#define BME280_CTRL_HUMIDITY_REG_OVERSAMP_HUMIDITY__POS             (0)
+#define BME280_CTRL_HUMIDITY_REG_OVERSAMP_HUMIDITY__MSK             (0x07)
+#define BME280_CTRL_HUMIDITY_REG_OVERSAMP_HUMIDITY__LEN             (3)
+#define BME280_CTRL_HUMIDITY_REG_OVERSAMP_HUMIDITY__REG            \
+(BME280_CTRL_HUMIDITY_REG)
 /****************************************************/
 /**\name	BIT MASK, LENGTH AND POSITION DEFINITIONS
 FOR STANDBY TIME  */
 /***************************************************/
 /* Configuration Register */
-#define BME280_CONFIG_REG_TSB__POS                 5
-#define BME280_CONFIG_REG_TSB__MSK                 0xE0
-#define BME280_CONFIG_REG_TSB__LEN                 3
-#define BME280_CONFIG_REG_TSB__REG                 BME280_CONFIG_REG
+#define BME280_CONFIG_REG_TSB__POS                 (5)
+#define BME280_CONFIG_REG_TSB__MSK                 (0xE0)
+#define BME280_CONFIG_REG_TSB__LEN                 (3)
+#define BME280_CONFIG_REG_TSB__REG                 (BME280_CONFIG_REG)
 /****************************************************/
 /**\name	BIT MASK, LENGTH AND POSITION DEFINITIONS
 FOR FILTER */
 /***************************************************/
-#define BME280_CONFIG_REG_FILTER__POS              2
-#define BME280_CONFIG_REG_FILTER__MSK              0x1C
-#define BME280_CONFIG_REG_FILTER__LEN              3
-#define BME280_CONFIG_REG_FILTER__REG              BME280_CONFIG_REG
+#define BME280_CONFIG_REG_FILTER__POS              (2)
+#define BME280_CONFIG_REG_FILTER__MSK              (0x1C)
+#define BME280_CONFIG_REG_FILTER__LEN              (3)
+#define BME280_CONFIG_REG_FILTER__REG              (BME280_CONFIG_REG)
 /****************************************************/
 /**\name	BIT MASK, LENGTH AND POSITION DEFINITIONS
 FOR SPI ENABLE  */
 /***************************************************/
-#define BME280_CONFIG_REG_SPI3_ENABLE__POS             0
-#define BME280_CONFIG_REG_SPI3_ENABLE__MSK             0x01
-#define BME280_CONFIG_REG_SPI3_ENABLE__LEN             1
-#define BME280_CONFIG_REG_SPI3_ENABLE__REG             BME280_CONFIG_REG
+#define BME280_CONFIG_REG_SPI3_ENABLE__POS             (0)
+#define BME280_CONFIG_REG_SPI3_ENABLE__MSK             (0x01)
+#define BME280_CONFIG_REG_SPI3_ENABLE__LEN             (1)
+#define BME280_CONFIG_REG_SPI3_ENABLE__REG            (BME280_CONFIG_REG)
 /****************************************************/
 /**\name	BIT MASK, LENGTH AND POSITION DEFINITIONS
 FOR PRESSURE AND TEMPERATURE DATA  */
 /***************************************************/
 /* Data Register */
-#define BME280_PRESSURE_XLSB_REG_DATA__POS         4
-#define BME280_PRESSURE_XLSB_REG_DATA__MSK         0xF0
-#define BME280_PRESSURE_XLSB_REG_DATA__LEN         4
-#define BME280_PRESSURE_XLSB_REG_DATA__REG         BME280_PRESSURE_XLSB_REG
+#define BME280_PRESSURE_XLSB_REG_DATA__POS         (4)
+#define BME280_PRESSURE_XLSB_REG_DATA__MSK         (0xF0)
+#define BME280_PRESSURE_XLSB_REG_DATA__LEN         (4)
+#define BME280_PRESSURE_XLSB_REG_DATA__REG         (BME280_PRESSURE_XLSB_REG)
 
-#define BME280_TEMPERATURE_XLSB_REG_DATA__POS      4
-#define BME280_TEMPERATURE_XLSB_REG_DATA__MSK      0xF0
-#define BME280_TEMPERATURE_XLSB_REG_DATA__LEN      4
-#define BME280_TEMPERATURE_XLSB_REG_DATA__REG      BME280_TEMPERATURE_XLSB_REG
+#define BME280_TEMPERATURE_XLSB_REG_DATA__POS      (4)
+#define BME280_TEMPERATURE_XLSB_REG_DATA__MSK      (0xF0)
+#define BME280_TEMPERATURE_XLSB_REG_DATA__LEN      (4)
+#define BME280_TEMPERATURE_XLSB_REG_DATA__REG      (BME280_TEMPERATURE_XLSB_REG)
 /****************************************************/
 /**\name	BUS READ AND WRITE FUNCTION POINTERS */
 /***************************************************/
@@ -903,9 +826,10 @@ struct bme280_t {
 	u8 ctrl_hum_reg;/**< status of control humidity register*/
 	u8 ctrl_meas_reg;/**< status of control measurement register*/
 	u8 config_reg;/**< status of configuration register*/
+
 	BME280_WR_FUNC_PTR;/**< bus write function pointer*/
 	BME280_RD_FUNC_PTR;/**< bus read function pointer*/
-	void(*delay_msec)(BME280_MDELAY_DATA_TYPE);/**< delay function pointer*/
+	void (*delay_msec)(BME280_MDELAY_DATA_TYPE);/**< delay function pointer*/
 };
 /**************************************************************/
 /**\name	FUNCTION DECLARATIONS                         */
@@ -977,7 +901,7 @@ s32 *v_uncomp_temperature_s32);
  *  @return Returns the actual temperature
  *
 */
-s32 bme280_compensate_T_int32(s32 v_uncomp_temperature_s32);
+s32 bme280_compensate_temperature_int32(s32 v_uncomp_temperature_s32);
 /*!
  * @brief Reads actual temperature from uncompensated temperature
  * @note Returns the value with 500LSB/DegC centred around 24 DegC
@@ -991,7 +915,8 @@ s32 bme280_compensate_T_int32(s32 v_uncomp_temperature_s32);
  *  @return Return the actual temperature as s16 output
  *
 */
-s16 bme280_compensate_T_int32_sixteen_bit_output(s32 v_uncomp_temperature_s32);
+s16 bme280_compensate_temperature_int32_sixteen_bit_output(
+s32 v_uncomp_temperature_s32);
 /**************************************************************/
 /**\name	FUNCTION FOR  INTIALIZATION UNCOMPENSATED PRESSURE */
 /**************************************************************/
@@ -1034,7 +959,7 @@ s32 *v_uncomp_pressure_s32);
  *  @return Return the actual pressure output as u32
  *
 */
-u32 bme280_compensate_P_int32(s32 v_uncomp_pressure_s32);
+u32 bme280_compensate_pressure_int32(s32 v_uncomp_pressure_s32);
 /**************************************************************/
 /**\name	FUNCTION FOR  INTIALIZATION UNCOMPENSATED HUMIDITY */
 /**************************************************************/
@@ -1075,7 +1000,7 @@ s32 *v_uncomp_humidity_s32);
  *  @return Return the actual relative humidity output as u32
  *
 */
-u32 bme280_compensate_H_int32(s32 v_uncomp_humidity_s32);
+u32 bme280_compensate_humidity_int32(s32 v_uncomp_humidity_s32);
 /*!
  * @brief Reads actual humidity from uncompensated humidity
  * @note Returns the value in %rH as unsigned 16bit integer
@@ -1090,7 +1015,8 @@ u32 bme280_compensate_H_int32(s32 v_uncomp_humidity_s32);
  *  @return Return the actual relative humidity output as u16
  *
 */
-u16 bme280_compensate_H_int32_sixteen_bit_output(s32 v_uncomp_humidity_s32);
+u16 bme280_compensate_humidity_int32_sixteen_bit_output(
+s32 v_uncomp_humidity_s32);
 /**************************************************************/
 /**\name	FUNCTION FOR  INTIALIZATION UNCOMPENSATED PRESSURE,
  TEMPERATURE AND HUMIDITY */
@@ -1334,16 +1260,16 @@ BME280_RETURN_FUNCTION_TYPE bme280_get_oversamp_humidity(u8 *v_value_u8);
  *
  *
  *
- * @note The "BME280_CTRL_HUMIDITY_REG_OVERSAM_HUMIDITY"
+ * @note The "BME280_CTRL_HUMIDITY_REG_OVERSAMP_HUMIDITY"
  * register sets the humidity
  * data acquisition options of the device.
  * @note changes to this registers only become
  * effective after a write operation to
  * "BME280_CTRL_MEAS_REG" register.
  * @note In the code automated reading and writing of
- *	"BME280_CTRL_HUMIDITY_REG_OVERSAM_HUMIDITY"
+ *	"BME280_CTRL_HUMIDITY_REG_OVERSAMP_HUMIDITY"
  * @note register first set the
- * "BME280_CTRL_HUMIDITY_REG_OVERSAM_HUMIDITY"
+ * "BME280_CTRL_HUMIDITY_REG_OVERSAMP_HUMIDITY"
  *  and then read and write
  *  the "BME280_CTRL_MEAS_REG" register in the function.
  *
@@ -1680,7 +1606,8 @@ u8 *v_data_u8, u8 v_len_u8);
  *  @return  Return the actual temperature in floating point
  *
 */
-double bme280_compensate_T_double(s32 v_uncom_temperature_s32);
+double bme280_compensate_temperature_double(
+s32 v_uncom_temperature_s32);
 /**************************************************************/
 /**\name	FUNCTION FOR FLOAT OUTPUT PRESSURE*/
 /**************************************************************/
@@ -1697,7 +1624,7 @@ double bme280_compensate_T_double(s32 v_uncom_temperature_s32);
  *  @return  Return the actual pressure in floating point
  *
 */
-double bme280_compensate_P_double(s32 v_uncom_pressure_s32);
+double bme280_compensate_pressure_double(s32 v_uncom_pressure_s32);
 /**************************************************************/
 /**\name	FUNCTION FOR FLOAT OUTPUT HUMIDITY*/
 /**************************************************************/
@@ -1713,7 +1640,7 @@ double bme280_compensate_P_double(s32 v_uncom_pressure_s32);
  *  @return Return the actual humidity in floating point
  *
 */
-double bme280_compensate_H_double(s32 v_uncom_humidity_s32);
+double bme280_compensate_humidity_double(s32 v_uncom_humidity_s32);
 #endif
 /**************************************************************/
 /**\name	FUNCTION FOR 64BIT OUTPUT PRESSURE*/
@@ -1735,7 +1662,7 @@ double bme280_compensate_H_double(s32 v_uncom_humidity_s32);
  *  @return Return the actual pressure in u32
  *
 */
-u32 bme280_compensate_P_int64(s32 v_uncom_pressure_s32);
+u32 bme280_compensate_pressure_int64(s32 v_uncom_pressure_s32);
 /**************************************************************/
 /**\name	FUNCTION FOR 24BIT OUTPUT PRESSURE*/
 /**************************************************************/
@@ -1753,7 +1680,8 @@ u32 bme280_compensate_P_int64(s32 v_uncom_pressure_s32);
  *  @return the actual pressure in u32
  *
 */
-u32 bme280_compensate_P_int64_twentyfour_bit_output(s32 v_uncom_pressure_s32);
+u32 bme280_compensate_pressure_int64_twentyfour_bit_output(
+s32 v_uncom_pressure_s32);
 #endif
 /**************************************************************/
 /**\name	FUNCTION FOR WAIT PERIOD*/

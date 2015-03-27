@@ -1,10 +1,10 @@
 /*
 ****************************************************************************
-* Copyright (C) 2014 Bosch Sensortec GmbH
+* Copyright (C) 2014 - 2015 Bosch Sensortec GmbH
 *
 * bme280_support.c
-* Date: 2014/12/12
-* Revision: 1.0.4 $
+* Date: 2015/03/27
+* Revision: 1.0.5 $
 *
 * Usage: Sensor Driver support file for BME280 sensor
 *
@@ -125,19 +125,19 @@ struct bme280_t bme280;
 s32 bme280_data_readout_template(void)
 {
 	/* The variable used to assign the standby time*/
-	u8 v_stand_by_time_u8 = BME280_ZERO_U8X;
+	u8 v_stand_by_time_u8 = BME280_INIT_VALUE;
 	/* The variable used to read uncompensated temperature*/
-	s32 v_data_uncomp_tem_s32 = BME280_ZERO_U8X;
+	s32 v_data_uncomp_tem_s32 = BME280_INIT_VALUE;
 	/* The variable used to read uncompensated pressure*/
-	s32 v_data_uncomp_pres_s32 = BME280_ZERO_U8X;
+	s32 v_data_uncomp_pres_s32 = BME280_INIT_VALUE;
 	/* The variable used to read uncompensated pressure*/
-	s32 v_data_uncomp_hum_s32 = BME280_ZERO_U8X;
+	s32 v_data_uncomp_hum_s32 = BME280_INIT_VALUE;
 	/* The variable used to read real temperature*/
-	s32 v_actual_temp_s32 = BME280_ZERO_U8X;
+	s32 v_actual_temp_s32 = BME280_INIT_VALUE;
 	/* The variable used to read real pressure*/
-	u32 v_actual_press_u32 = BME280_ZERO_U8X;
+	u32 v_actual_press_u32 = BME280_INIT_VALUE;
 	/* The variable used to read real humidity*/
-	u32 v_actual_humity_u32 = BME280_ZERO_U8X;
+	u32 v_actual_humity_u32 = BME280_INIT_VALUE;
 	/* result of communication results*/
 	s32 com_rslt = ERROR;
 
@@ -230,11 +230,11 @@ AND HUMIDITY DATA ********
 *---------------------------------------------------------------------*/
 	/* API is used to read the true temperature*/
 	/* Input value as uncompensated temperature and output format*/
-	com_rslt += bme280_compensate_T_int32(v_data_uncomp_tem_s32);
+	com_rslt += bme280_compensate_temperature_int32(v_data_uncomp_tem_s32);
 
 	/* API is used to read the true pressure*/
 	/* Input value as uncompensated pressure */
-	com_rslt += bme280_compensate_P_int32(v_data_uncomp_pres_s32);
+	com_rslt += bme280_compensate_pressure_int32(v_data_uncomp_pres_s32);
 
 	/* API is used to read the true humidity*/
 	/* Input value as uncompensated humidity and output format*/
@@ -285,7 +285,7 @@ s8 I2C_routine(void) {
 	bme280.dev_addr = BME280_I2C_ADDRESS2;
 	bme280.delay_msec = BME280_delay_msek;
 
-	return BME280_ZERO_U8X;
+	return BME280_INIT_VALUE;
 }
 
 /*---------------------------------------------------------------------------*
@@ -304,7 +304,7 @@ s8 SPI_routine(void) {
 	bme280.bus_read = BME280_SPI_bus_read;
 	bme280.delay_msec = BME280_delay_msek;
 
-	return BME280_ZERO_U8X;
+	return BME280_INIT_VALUE;
 }
 
 /************** I2C/SPI buffer length ******/
@@ -326,11 +326,11 @@ s8 SPI_routine(void) {
  */
 s8 BME280_I2C_bus_write(u8 dev_addr, u8 reg_addr, u8 *reg_data, u8 cnt)
 {
-	s32 iError = BME280_ZERO_U8X;
+	s32 iError = BME280_INIT_VALUE;
 	u8 array[I2C_BUFFER_LEN];
-	u8 stringpos = BME280_ZERO_U8X;
-	array[BME280_ZERO_U8X] = reg_addr;
-	for (stringpos = BME280_ZERO_U8X; stringpos < cnt; stringpos++) {
+	u8 stringpos = BME280_INIT_VALUE;
+	array[BME280_INIT_VALUE] = reg_addr;
+	for (stringpos = BME280_INIT_VALUE; stringpos < cnt; stringpos++) {
 		array[stringpos + BME280_ONE_U8X] = *(reg_data + stringpos);
 	}
 	/*
@@ -360,10 +360,10 @@ s8 BME280_I2C_bus_write(u8 dev_addr, u8 reg_addr, u8 *reg_data, u8 cnt)
  */
 s8 BME280_I2C_bus_read(u8 dev_addr, u8 reg_addr, u8 *reg_data, u8 cnt)
 {
-	s32 iError = BME280_ZERO_U8X;
-	u8 array[I2C_BUFFER_LEN] = {BME280_ZERO_U8X};
-	u8 stringpos = BME280_ZERO_U8X;
-	array[BME280_ZERO_U8X] = reg_addr;
+	s32 iError = BME280_INIT_VALUE;
+	u8 array[I2C_BUFFER_LEN] = {BME280_INIT_VALUE};
+	u8 stringpos = BME280_INIT_VALUE;
+	array[BME280_INIT_VALUE] = reg_addr;
 	/* Please take the below function as your reference
 	 * for read the data using I2C communication
 	 * add your I2C rad function here.
@@ -373,7 +373,7 @@ s8 BME280_I2C_bus_read(u8 dev_addr, u8 reg_addr, u8 *reg_data, u8 cnt)
      * In the driver SUCCESS defined as 0
      * and FAILURE defined as -1
 	 */
-	for (stringpos = BME280_ZERO_U8X; stringpos < cnt; stringpos++) {
+	for (stringpos = BME280_INIT_VALUE; stringpos < cnt; stringpos++) {
 		*(reg_data + stringpos) = array[stringpos];
 	}
 	return (s8)iError;
@@ -388,13 +388,13 @@ s8 BME280_I2C_bus_read(u8 dev_addr, u8 reg_addr, u8 *reg_data, u8 cnt)
  */
 s8 BME280_SPI_bus_read(u8 dev_addr, u8 reg_addr, u8 *reg_data, u8 cnt)
 {
-	s32 iError=BME280_ZERO_U8X;
+	s32 iError=BME280_INIT_VALUE;
 	u8 array[SPI_BUFFER_LEN]={MASK_DATA1};
 	u8 stringpos;
 	/*	For the SPI mode only 7 bits of register addresses are used.
 	The MSB of register address is declared the bit what functionality it is
-	read/write (read as 1/write as BME280_ZERO_U8X)*/
-	array[BME280_ZERO_U8X] = reg_addr|MASK_DATA2;/*read routine is initiated register address is mask with 0x80*/
+	read/write (read as 1/write as BME280_INIT_VALUE)*/
+	array[BME280_INIT_VALUE] = reg_addr|MASK_DATA2;/*read routine is initiated register address is mask with 0x80*/
 	/*
 	* Please take the below function as your reference for
 	* read the data using SPI communication
@@ -411,7 +411,7 @@ s8 BME280_SPI_bus_read(u8 dev_addr, u8 reg_addr, u8 *reg_data, u8 cnt)
 	* and write string function
 	* For more information please refer data sheet SPI communication:
 	*/
-	for (stringpos = BME280_ZERO_U8X; stringpos < cnt; stringpos++) {
+	for (stringpos = BME280_INIT_VALUE; stringpos < cnt; stringpos++) {
 		*(reg_data + stringpos) = array[stringpos+BME280_ONE_U8X];
 	}
 	return (s8)iError;
@@ -427,12 +427,12 @@ s8 BME280_SPI_bus_read(u8 dev_addr, u8 reg_addr, u8 *reg_data, u8 cnt)
  */
 s8 BME280_SPI_bus_write(u8 dev_addr, u8 reg_addr, u8 *reg_data, u8 cnt)
 {
-	s32 iError = BME280_ZERO_U8X;
+	s32 iError = BME280_INIT_VALUE;
 	u8 array[SPI_BUFFER_LEN * BME280_TWO_U8X];
-	u8 stringpos = BME280_ZERO_U8X;
-	for (stringpos = BME280_ZERO_U8X; stringpos < cnt; stringpos++) {
+	u8 stringpos = BME280_INIT_VALUE;
+	for (stringpos = BME280_INIT_VALUE; stringpos < cnt; stringpos++) {
 		/* the operation of (reg_addr++)&0x7F done: because it ensure the
-		   BME280_ZERO_U8X and 1 of the given value
+		   BME280_INIT_VALUE and 1 of the given value
 		   It is done only for 8bit operation*/
 		array[stringpos * BME280_TWO_U8X] = (reg_addr++) & MASK_DATA3;
 		array[stringpos * BME280_TWO_U8X + BME280_ONE_U8X] = *(reg_data + stringpos);
