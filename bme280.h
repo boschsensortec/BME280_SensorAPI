@@ -95,7 +95,7 @@ typedef	u_int64_t u64;/**< used for unsigned 64bit */
 * These definition uses for define the C
 * standard version data types
 ***********************************************************/
-# if !defined(__STDC_VERSION__)
+# if defined(__STDC_VERSION__)
 
 /************************************************
  * compiler is C11 C standard
