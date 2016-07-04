@@ -1,13 +1,13 @@
 /** \mainpage
 *
 ****************************************************************************
-* Copyright (C) 2013 - 2015 Bosch Sensortec GmbH
+* Copyright (C) 2015 - 2016 Bosch Sensortec GmbH
 *
 * File : bme280.h
 *
-* Date : 2015/03/27
+* Date : 2016/07/04
 *
-* Revision : 2.0.4(Pressure and Temperature compensation code revision is 1.1
+* Revision : 2.0.5(Pressure and Temperature compensation code revision is 1.1
 *               and Humidity compensation code revision is 1.0)
 *
 * Usage: Sensor Driver for BME280 sensor
@@ -95,7 +95,7 @@ typedef	u_int64_t u64;/**< used for unsigned 64bit */
 * These definition uses for define the C
 * standard version data types
 ***********************************************************/
-# if !defined(__STDC_VERSION__)
+# if defined(__STDC_VERSION__)
 
 /************************************************
  * compiler is C11 C standard
@@ -179,7 +179,7 @@ could not be found, or 64 bit integers are not supported in your environment.
 #warning The API will only offer 32 bit pressure calculation.This will \
 slightly impede accuracy(noise of ~1 pascal RMS will be added to output).
 #warning If 64 bit integers are supported on your platform, \
-please set s64 manually and "#define(BMPE80_64BITSUPPORT_PRESENT)" manually.
+please set s64 manually and "#define(BME280_64BITSUPPORT_PRESENT)" manually.
 #endif
 
 /*unsigned integer types*/
@@ -310,7 +310,7 @@ define the data types manually
 #endif
 #endif
 /********************************************/
-/**\name	ENABLE FLATING OUTPUT      */
+/**\name	ENABLE FLOATING OUTPUT      */
 /**************************************/
 /*!
 * @brief If the user wants to support floating point calculations, please set
@@ -438,7 +438,7 @@ BME280_BUS_RD_PARAM_TYPE to function calls used inside the API
 #define BME280_NULL                          (0)
 #define BME280_RETURN_FUNCTION_TYPE          s8
 /* shift definitions*/
-#define BME280_SHIFT_BIT_POSITION_BY_01_BIT				(1)
+#define BME280_SHIFT_BIT_POSITION_BY_01_BIT			(1)
 #define BME280_SHIFT_BIT_POSITION_BY_02_BITS			(2)
 #define BME280_SHIFT_BIT_POSITION_BY_03_BITS			(3)
 #define BME280_SHIFT_BIT_POSITION_BY_04_BITS			(4)
@@ -469,8 +469,9 @@ BME280_BUS_RD_PARAM_TYPE to function calls used inside the API
 #define	BME280_TEMPERATURE_DATA_LENGTH			(3)
 #define	BME280_PRESSURE_DATA_LENGTH				(3)
 #define	BME280_ALL_DATA_FRAME_LENGTH			(8)
-#define	BME280_INIT_VALUE						(0)
-#define	BME280_INVALID_DATA						(0)
+#define	BME280_INIT_VALUE				(0)
+#define	BME280_CHIP_ID_READ_COUNT			(5)
+#define	BME280_INVALID_DATA				(0)
 
 /****************************************************/
 /**\name	ERROR CODE DEFINITIONS  */
@@ -480,6 +481,14 @@ BME280_BUS_RD_PARAM_TYPE to function calls used inside the API
 #define E_BME280_COMM_RES       ((s8)-1)
 #define E_BME280_OUT_OF_RANGE   ((s8)-2)
 #define ERROR					((s8)-1)
+#define BME280_CHIP_ID_READ_FAIL	((s8)-1)
+#define BME280_CHIP_ID_READ_SUCCESS	((u8)0)
+
+/****************************************************/
+/**\name	CHIP ID DEFINITIONS  */
+/***************************************************/
+#define BME280_CHIP_ID                  (0x60)
+
 /****************************************************/
 /**\name	I2C ADDRESS DEFINITIONS  */
 /***************************************************/
@@ -778,9 +787,10 @@ FOR PRESSURE AND TEMPERATURE DATA  */
 		s8 (*bus_read)(u8, u8,\
 		u8 *, u8)
 
-#define BME280_MDELAY_DATA_TYPE u16
+#define BME280_MDELAY_DATA_TYPE u32
 
-#define	BME280_3MS_DELAY	3
+#define	BME280_3MS_DELAY	(3)
+#define BME280_REGISTER_READ_DELAY (1)
 /**************************************************************/
 /**\name	STRUCTURE DEFINITIONS                         */
 /**************************************************************/
@@ -1700,5 +1710,5 @@ s32 v_uncom_pressure_s32);
  *
  */
 BME280_RETURN_FUNCTION_TYPE bme280_compute_wait_time(u8
-*v_delaytime_u8r);
+*v_delaytime_u8);
 #endif

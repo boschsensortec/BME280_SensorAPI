@@ -16,9 +16,9 @@ INTRODUCTION
 VERSION
 =========
 	- Version of bme280 sensor driver is:
-		* bme280.c - V2.0.4
-		* bme280.h - V2.0.4
-		* bme280_support.c - V1.0.5
+		* bme280.c - V2.0.5
+		* bme280.h - V2.0.5
+		* bme280_support.c - V1.0.6
 
 INTEGRATION DETAILS
 =====================
@@ -55,7 +55,7 @@ SUPPORTED SENSOR INTERFACE
 
 COPYRIGHT
 ===========
-	- Copyright (C) 2013 - 2015 Bosch Sensortec GmbH
+	- Copyright (C) 2013 - 2016 Bosch Sensortec GmbH
 
 
 	

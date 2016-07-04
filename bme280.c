@@ -1,10 +1,10 @@
 /*
 ****************************************************************************
-* Copyright (C) 2013 - 2015 Bosch Sensortec GmbH
+* Copyright (C) 2015 - 2016 Bosch Sensortec GmbH
 *
 * bme280.c
-* Date: 2015/03/27
-* Revision: 2.0.4(Pressure and Temperature compensation code revision is 1.1
+* Date: 2016/07/04
+* Revision: 2.0.5(Pressure and Temperature compensation code revision is 1.1
 *               and Humidity compensation code revision is 1.0)
 *
 * Usage: Sensor Driver file for BME280 sensor
@@ -84,17 +84,35 @@ BME280_RETURN_FUNCTION_TYPE bme280_init(struct bme280_t *bme280)
 	/* used to return the communication result*/
 	BME280_RETURN_FUNCTION_TYPE com_rslt = ERROR;
 	u8 v_data_u8 = BME280_INIT_VALUE;
+	u8 v_chip_id_read_count = BME280_CHIP_ID_READ_COUNT;
 
-	p_bme280 = bme280;
 	/* assign BME280 ptr */
-	com_rslt = p_bme280->BME280_BUS_READ_FUNC(p_bme280->dev_addr,
-	BME280_CHIP_ID_REG, &v_data_u8,
-	BME280_GEN_READ_WRITE_DATA_LENGTH);
-	/* read Chip Id */
-	p_bme280->chip_id = v_data_u8;
+	p_bme280 = bme280;
 
-	com_rslt += bme280_get_calib_param();
-	/* readout bme280 calibparam structure */
+	while (v_chip_id_read_count > 0) {
+
+		/* read Chip Id */
+		com_rslt = p_bme280->BME280_BUS_READ_FUNC(p_bme280->dev_addr,
+				BME280_CHIP_ID_REG, &v_data_u8,
+				BME280_GEN_READ_WRITE_DATA_LENGTH);
+		/* Check for the correct chip id */
+		if (v_data_u8 == BME280_CHIP_ID)
+			break;
+		v_chip_id_read_count--;
+		/* Delay added concerning the low speed of power up system to
+		facilitate the proper reading of the chip ID */
+		p_bme280->delay_msec(BME280_REGISTER_READ_DELAY);
+	}
+	/*assign chip ID to the global structure*/
+	p_bme280->chip_id = v_data_u8;
+	/*com_rslt status of chip ID read*/
+	com_rslt = (v_chip_id_read_count == BME280_INIT_VALUE) ?
+			BME280_CHIP_ID_READ_FAIL : BME280_CHIP_ID_READ_SUCCESS;
+
+	if (com_rslt == BME280_CHIP_ID_READ_SUCCESS) {
+		/* readout bme280 calibparam structure */
+		com_rslt += bme280_get_calib_param();
+	}
 	return com_rslt;
 }
 /*!
@@ -1824,7 +1842,7 @@ s32 *v_uncom_temperature_s32, s32 *v_uncom_humidity_s32)
 	/* used to return the communication result*/
 	BME280_RETURN_FUNCTION_TYPE com_rslt = ERROR;
 	u8 v_data_u8 = BME280_INIT_VALUE;
-	u8 v_waittime_u8r = BME280_INIT_VALUE;
+	u8 v_waittime_u8 = BME280_INIT_VALUE;
 	u8 v_prev_pow_mode_u8 = BME280_INIT_VALUE;
 	u8 v_mode_u8r = BME280_INIT_VALUE;
 	u8 pre_ctrl_config_value = BME280_INIT_VALUE;
@@ -1874,8 +1892,8 @@ s32 *v_uncom_temperature_s32, s32 *v_uncom_humidity_s32)
 					BME280_CTRL_MEAS_REG,
 				&v_mode_u8r, BME280_GEN_READ_WRITE_DATA_LENGTH);
 			}
-			bme280_compute_wait_time(&v_waittime_u8r);
-			p_bme280->delay_msec(v_waittime_u8r);
+			bme280_compute_wait_time(&v_waittime_u8);
+			p_bme280->delay_msec(v_waittime_u8);
 			/* read the force-mode value of pressure
 			temperature and humidity*/
 			com_rslt +=
@@ -2033,7 +2051,7 @@ double bme280_compensate_pressure_double(s32 v_uncom_pressure_s32)
 	((double)p_bme280->cal_param.dig_P1);
 	pressure = 1048576.0 - (double)v_uncom_pressure_s32;
 	/* Avoid exception caused by division by zero */
-	if (v_x1_u32 != BME280_INIT_VALUE)
+	if ((v_x1_u32 > 0) || (v_x1_u32 < 0))
 		pressure = (pressure - (v_x2_u32 / 4096.0)) * 6250.0 / v_x1_u32;
 	else
 		return BME280_INVALID_DATA;
@@ -2062,7 +2080,7 @@ double bme280_compensate_humidity_double(s32 v_uncom_humidity_s32)
 	double var_h = BME280_INIT_VALUE;
 
 	var_h = (((double)p_bme280->cal_param.t_fine) - 76800.0);
-	if (var_h != BME280_INIT_VALUE)
+	if ((var_h > 0) || (var_h < 0))
 		var_h = (v_uncom_humidity_s32 -
 		(((double)p_bme280->cal_param.dig_H4) * 64.0 +
 		((double)p_bme280->cal_param.dig_H5) / 16384.0 * var_h))*
@@ -2204,9 +2222,9 @@ BME280_RETURN_FUNCTION_TYPE bme280_compute_wait_time(u8
 	>> BME280_SHIFT_BIT_POSITION_BY_01_BIT) +
 	((1 << p_bme280->oversamp_humidity)
 	>> BME280_SHIFT_BIT_POSITION_BY_01_BIT))
-	+ (p_bme280->oversamp_pressure ?
+	+ ((p_bme280->oversamp_pressure > 0) ?
 	T_SETUP_PRESSURE_MAX : 0) +
-	(p_bme280->oversamp_humidity ?
+	((p_bme280->oversamp_humidity > 0) ?
 	T_SETUP_HUMIDITY_MAX : 0) + 15) / 16;
 	return com_rslt;
 }

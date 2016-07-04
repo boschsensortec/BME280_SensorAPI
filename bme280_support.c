@@ -1,10 +1,10 @@
 /*
 ****************************************************************************
-* Copyright (C) 2014 - 2015 Bosch Sensortec GmbH
+* Copyright (C) 2015 - 2016 Bosch Sensortec GmbH
 *
 * bme280_support.c
-* Date: 2015/03/27
-* Revision: 1.0.5 $
+* Date: 2016/07/04
+* Revision: 1.0.6 $
 *
 * Usage: Sensor Driver support file for BME280 sensor
 *
@@ -54,6 +54,8 @@
 /*---------------------------------------------------------------------------*/
 #include "bme280.h"
 
+#define BME280_API
+/*Enable the macro BME280_API to use this support file */
 /*----------------------------------------------------------------------------*
 *  The following functions are used for reading and writing of
 *	sensor data using I2C or SPI communication
@@ -127,17 +129,18 @@ s32 bme280_data_readout_template(void)
 	/* The variable used to assign the standby time*/
 	u8 v_stand_by_time_u8 = BME280_INIT_VALUE;
 	/* The variable used to read uncompensated temperature*/
-	s32 v_data_uncomp_tem_s32 = BME280_INIT_VALUE;
+	s32 v_data_uncomp_temp_s32 = BME280_INIT_VALUE;
 	/* The variable used to read uncompensated pressure*/
 	s32 v_data_uncomp_pres_s32 = BME280_INIT_VALUE;
 	/* The variable used to read uncompensated pressure*/
 	s32 v_data_uncomp_hum_s32 = BME280_INIT_VALUE;
-	/* The variable used to read real temperature*/
-	s32 v_actual_temp_s32 = BME280_INIT_VALUE;
-	/* The variable used to read real pressure*/
-	u32 v_actual_press_u32 = BME280_INIT_VALUE;
-	/* The variable used to read real humidity*/
-	u32 v_actual_humity_u32 = BME280_INIT_VALUE;
+	/* The variable used to read compensated temperature*/
+	s32 v_comp_temp_s32[2] = {BME280_INIT_VALUE, BME280_INIT_VALUE};
+	/* The variable used to read compensated pressure*/
+	u32 v_comp_press_u32[2] = {BME280_INIT_VALUE, BME280_INIT_VALUE};
+	/* The variable used to read compensated humidity*/
+	u32 v_comp_humidity_u32[2] = {BME280_INIT_VALUE, BME280_INIT_VALUE};
+
 	/* result of communication results*/
 	s32 com_rslt = ERROR;
 
@@ -146,9 +149,9 @@ s32 bme280_data_readout_template(void)
  /*********************** START INITIALIZATION ************************/
   /*	Based on the user need configure I2C or SPI interface.
   *	It is example code to explain how to use the bme280 API*/
-  #ifdef BME280_API
+ 	#ifdef BME280_API
 	I2C_routine();
-	/*SPI_routine(); */
+	/*SPI_routine();*/
 	#endif
 /*--------------------------------------------------------------------------*
  *  This function used to assign the value/reference of
@@ -208,7 +211,7 @@ s32 bme280_data_readout_template(void)
 AND HUMIDITY DATA ********
 *---------------------------------------------------------------------*/
 	/* API is used to read the uncompensated temperature*/
-	com_rslt += bme280_read_uncomp_temperature(&v_data_uncomp_tem_s32);
+	com_rslt += bme280_read_uncomp_temperature(&v_data_uncomp_temp_s32);
 
 	/* API is used to read the uncompensated pressure*/
 	com_rslt += bme280_read_uncomp_pressure(&v_data_uncomp_pres_s32);
@@ -219,32 +222,32 @@ AND HUMIDITY DATA ********
 	/* API is used to read the uncompensated temperature,pressure
 	and humidity data */
 	com_rslt += bme280_read_uncomp_pressure_temperature_humidity(
-	&v_data_uncomp_tem_s32, &v_data_uncomp_pres_s32, &v_data_uncomp_hum_s32);
+	&v_data_uncomp_temp_s32, &v_data_uncomp_pres_s32, &v_data_uncomp_hum_s32);
 /*--------------------------------------------------------------------*
 ************ END READ UNCOMPENSATED PRESSURE AND TEMPERATURE********
 *-------------------------------------------------------------------------*/
 
 /*------------------------------------------------------------------*
-************ START READ TRUE PRESSURE, TEMPERATURE
+************ START READ COMPENSATED PRESSURE, TEMPERATURE
 AND HUMIDITY DATA ********
 *---------------------------------------------------------------------*/
-	/* API is used to read the true temperature*/
-	/* Input value as uncompensated temperature and output format*/
-	com_rslt += bme280_compensate_temperature_int32(v_data_uncomp_tem_s32);
+	/* API is used to compute the compensated temperature*/
+	v_comp_temp_s32[0] = bme280_compensate_temperature_int32(
+			v_data_uncomp_temp_s32);
 
-	/* API is used to read the true pressure*/
-	/* Input value as uncompensated pressure */
-	com_rslt += bme280_compensate_pressure_int32(v_data_uncomp_pres_s32);
+	/* API is used to compute the compensated pressure*/
+	v_comp_press_u32[0] = bme280_compensate_pressure_int32(
+			v_data_uncomp_pres_s32);
 
-	/* API is used to read the true humidity*/
-	/* Input value as uncompensated humidity and output format*/
-	com_rslt += bme280_compensate_H_int32(v_data_uncomp_hum_s32);
+	/* API is used to compute the compensated humidity*/
+	v_comp_humidity_u32[0] = bme280_compensate_humidity_int32(
+			v_data_uncomp_hum_s32);
 
-	/* API is used to read the true temperature, humidity and pressure*/
+	/* API is used to read the compensated temperature, humidity and pressure*/
 	com_rslt += bme280_read_pressure_temperature_humidity(
-	&v_actual_press_u32, &v_actual_temp_s32, &v_actual_humity_u32);
+	&v_comp_press_u32[1], &v_comp_temp_s32[1],  &v_comp_humidity_u32[1]);
 /*--------------------------------------------------------------------*
-************ END READ TRUE PRESSURE, TEMPERATURE AND HUMIDITY ********
+************ END READ COMPENSATED PRESSURE, TEMPERATURE AND HUMIDITY ********
 *-------------------------------------------------------------------------*/
 
 /*-----------------------------------------------------------------------*
@@ -265,9 +268,10 @@ return com_rslt;
 }
 
 #ifdef BME280_API
-#define MASK_DATA1	0xFF
-#define MASK_DATA2	0x80
-#define MASK_DATA3	0x7F
+#define SPI_READ	0x80
+#define SPI_WRITE	0x7F
+#define BME280_DATA_INDEX	1
+#define BME280_ADDRESS_INDEX	2
 /*--------------------------------------------------------------------------*
 *	The following function is used to map the I2C bus read, write, delay and
 *	device address with global structure bme280
@@ -331,12 +335,12 @@ s8 BME280_I2C_bus_write(u8 dev_addr, u8 reg_addr, u8 *reg_data, u8 cnt)
 	u8 stringpos = BME280_INIT_VALUE;
 	array[BME280_INIT_VALUE] = reg_addr;
 	for (stringpos = BME280_INIT_VALUE; stringpos < cnt; stringpos++) {
-		array[stringpos + BME280_ONE_U8X] = *(reg_data + stringpos);
+		array[stringpos + BME280_DATA_INDEX] = *(reg_data + stringpos);
 	}
 	/*
 	* Please take the below function as your reference for
 	* write the data using I2C communication
-	* "IERROR = I2C_WRITE_STRING(DEV_ADDR, ARRAY, CNT+1)"
+	* "IERROR = I2C_WRITE_STRING(DEV_ADDR, array, cnt+1)"
 	* add your I2C write function here
 	* iError is an return value of I2C read function
 	* Please select your valid return value
@@ -389,12 +393,12 @@ s8 BME280_I2C_bus_read(u8 dev_addr, u8 reg_addr, u8 *reg_data, u8 cnt)
 s8 BME280_SPI_bus_read(u8 dev_addr, u8 reg_addr, u8 *reg_data, u8 cnt)
 {
 	s32 iError=BME280_INIT_VALUE;
-	u8 array[SPI_BUFFER_LEN]={MASK_DATA1};
+	u8 array[SPI_BUFFER_LEN]={0,};
 	u8 stringpos;
 	/*	For the SPI mode only 7 bits of register addresses are used.
 	The MSB of register address is declared the bit what functionality it is
 	read/write (read as 1/write as BME280_INIT_VALUE)*/
-	array[BME280_INIT_VALUE] = reg_addr|MASK_DATA2;/*read routine is initiated register address is mask with 0x80*/
+	array[BME280_INIT_VALUE] = reg_addr|SPI_READ;/*read routine is initiated register address is mask with 0x80*/
 	/*
 	* Please take the below function as your reference for
 	* read the data using SPI communication
@@ -403,7 +407,7 @@ s8 BME280_SPI_bus_read(u8 dev_addr, u8 reg_addr, u8 *reg_data, u8 cnt)
 	* iError is an return value of SPI read function
 	* Please select your valid return value
 	* In the driver SUCCESS defined as 0
-    * and FAILURE defined as -1
+	* and FAILURE defined as -1
 	* Note :
 	* This is a full duplex operation,
 	* The first read data is discarded, for that extra write operation
@@ -412,7 +416,7 @@ s8 BME280_SPI_bus_read(u8 dev_addr, u8 reg_addr, u8 *reg_data, u8 cnt)
 	* For more information please refer data sheet SPI communication:
 	*/
 	for (stringpos = BME280_INIT_VALUE; stringpos < cnt; stringpos++) {
-		*(reg_data + stringpos) = array[stringpos+BME280_ONE_U8X];
+		*(reg_data + stringpos) = array[stringpos+BME280_DATA_INDEX];
 	}
 	return (s8)iError;
 }
@@ -420,7 +424,7 @@ s8 BME280_SPI_bus_read(u8 dev_addr, u8 reg_addr, u8 *reg_data, u8 cnt)
 /*	\Brief: The function is used as SPI bus write
  *	\Return : Status of the SPI write
  *	\param dev_addr : The device address of the sensor
- *	\param reg_addr : Address of the first register, will data is going to be written
+ *	\param reg_addr : Address of the first register, where data is to be written
  *	\param reg_data : It is a value hold in the array,
  *		will be used for write the value into the register
  *	\param cnt : The no of byte of data to be write
@@ -428,14 +432,15 @@ s8 BME280_SPI_bus_read(u8 dev_addr, u8 reg_addr, u8 *reg_data, u8 cnt)
 s8 BME280_SPI_bus_write(u8 dev_addr, u8 reg_addr, u8 *reg_data, u8 cnt)
 {
 	s32 iError = BME280_INIT_VALUE;
-	u8 array[SPI_BUFFER_LEN * BME280_TWO_U8X];
+	u8 array[SPI_BUFFER_LEN * BME280_ADDRESS_INDEX];
 	u8 stringpos = BME280_INIT_VALUE;
+	u8 index = BME280_INIT_VALUE;
 	for (stringpos = BME280_INIT_VALUE; stringpos < cnt; stringpos++) {
-		/* the operation of (reg_addr++)&0x7F done: because it ensure the
-		   BME280_INIT_VALUE and 1 of the given value
-		   It is done only for 8bit operation*/
-		array[stringpos * BME280_TWO_U8X] = (reg_addr++) & MASK_DATA3;
-		array[stringpos * BME280_TWO_U8X + BME280_ONE_U8X] = *(reg_data + stringpos);
+		/* the operation of (reg_addr++)&0x7F done as per the
+		SPI communication protocol specified in the data sheet*/
+		index = stringpos * BME280_ADDRESS_INDEX;
+		array[index] = (reg_addr++) & SPI_WRITE;
+		array[index + BME280_DATA_INDEX] = *(reg_data + stringpos);
 	}
 	/* Please take the below function as your reference
 	 * for write the data using SPI communication
@@ -444,7 +449,7 @@ s8 BME280_SPI_bus_write(u8 dev_addr, u8 reg_addr, u8 *reg_data, u8 cnt)
 	 * iError is an return value of SPI write function
 	 * Please select your valid return value
 	 * In the driver SUCCESS defined as 0
-     * and FAILURE defined as -1
+	 * and FAILURE defined as -1
 	 */
 	return (s8)iError;
 }
