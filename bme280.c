@@ -630,6 +630,9 @@ u32 *v_pressure_u32, s32 *v_temperature_s32, u32 *v_humidity_u32)
  *	dig_H1    |         0xA1     | from 0 to 7
  *	dig_H2    |  0xE1 and 0xE2   | from 0 : 7 to 8: 15
  *	dig_H3    |         0xE3     | from 0 to 7
+ *	dig_H4    |  0xE4 and 0xE5   | from 4 : 11 to 0: 3
+ *	dig_H5    |  0xE5 and 0xE6   | from 0 : 3 to 4: 11
+ *	dig_H6    |         0xE7     | from 0 to 7
  *
  *	@return results of bus communication function
  *	@retval 0 -> Success
