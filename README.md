@@ -7,9 +7,9 @@ The sensor driver package includes bme280.c, bme280.h and bme280_defs.h files.
 ## Version
 File | Version | Date
 -----|---------|-----
-bme280.c |  3.2.0     | 21 Mar 2017
-bme280.h |  3.2.0     | 21 Mar 2017
-bme280_defs.h |  3.2.0     | 21 Mar 2017
+bme280.c |  3.3.0     | 13 Jul 2017
+bme280.h |  3.3.0     | 13 Jul 2017
+bme280_defs.h |  3.3.0     | 13 Jul 2017
 
 ## Integration details
 * Integrate bme280.h, bme280_defs.h and bme280.c file in to the project.
@@ -40,8 +40,8 @@ struct bme280_dev dev;
 int8_t rslt = BME280_OK;
 
 /* Sensor_0 interface over SPI with native chip select line */
-dev.id = 0;
-dev.interface = BME280_SPI_INTF;
+dev.dev_id = 0;
+dev.intf = BME280_SPI_INTF;
 dev.read = user_spi_read;
 dev.write = user_spi_write;
 dev.delay_ms = user_delay_ms;
@@ -53,8 +53,8 @@ rslt = bme280_init(&dev);
 struct bme280_dev dev;
 int8_t rslt = BME280_OK;
 
-dev.id = BME280_I2C_ADDR_PRIM;
-dev.interface = BME280_I2C_INTF;
+dev.dev_id = BME280_I2C_ADDR_PRIM;
+dev.intf = BME280_I2C_INTF;
 dev.read = user_i2c_read;
 dev.write = user_i2c_write;
 dev.delay_ms = user_delay_ms;
@@ -65,74 +65,84 @@ Regarding compensation functions for temperature,pressure and humidity we have t
 1) Double precision floating point version
 2) Integer version
 
-By default, integer version is used in the API. If user needs double version, user has to
-enable FLOATING_POINT_REPRESENTATION macro in bme280_defs.h file.
+By default, integer version is used in the API. If the user needs the floating point version, the user has to uncomment BME280_FLOAT_ENABLE macro in bme280_defs.h file or add that to the compiler flags.
 
 In integer compensation functions, we also have below two implementations for pressure.
 1) For 32 bit machine.
 2) For 64 bit machine.
 
-By default, 64 bit variant is used in the API. If user wants 32 bit variant, user can disable the
-macro MACHINE_64_BIT in bme280_defs.h file.
+By default, 64 bit variant is used in the API. If the user wants 32 bit variant, the user can disable the
+macro BME280_64BIT_ENABLE in bme280_defs.h file.
 
-### Get sensor data
-#### Get sensor data in forced mode
+### Stream sensor data
+#### Stream sensor data in forced mode
 
 ``` c
-int8_t get_sensor_data_forced_mode(struct bme280_dev *dev)
+int8_t stream_sensor_data_forced_mode(struct bme280_dev *dev)
 {
-	int8_t rslt;
-	uint8_t settings_sel;
-	struct bme280_data comp_data;
+    int8_t rslt;
+    uint8_t settings_sel;
+    struct bme280_data comp_data;
 
-	/* Continuously get the sensor data */
-	while (1) {
-		dev->settings.osr_h = BME280_OVERSAMPLING_4X;
-		dev->settings.osr_p = BME280_OVERSAMPLING_4X;
-		dev->settings.osr_t = BME280_OVERSAMPLING_4X;
+    /* Recommended mode of operation: Indoor navigation */
+    dev->settings.osr_h = BME280_OVERSAMPLING_1X;
+    dev->settings.osr_p = BME280_OVERSAMPLING_16X;
+    dev->settings.osr_t = BME280_OVERSAMPLING_2X;
+    dev->settings.filter = BME280_FILTER_COEFF_16;
 
-		settings_sel = BME280_OSR_PRESS_SEL|BME280_OSR_TEMP_SEL|BME280_OSR_HUM_SEL;
+    settings_sel = BME280_OSR_PRESS_SEL | BME280_OSR_TEMP_SEL | BME280_OSR_HUM_SEL | BME280_FILTER_SEL;
 
-		rslt = bme280_set_sensor_settings(settings_sel, dev);
-		rslt = bme280_set_sensor_mode(BME280_FORCED_MODE, dev);
-		/* Give some delay for the sensor to go into force mode */
-		dev->delay_ms(5);
-		rslt = bme280_get_sensor_data(BME280_PRESS | BME280_HUM | BME280_TEMP, &comp_data, dev);
-		print_sensor_data(&comp_data);
-	}
-	return rslt;
+    rslt = bme280_set_sensor_settings(settings_sel, dev);
+
+    printf("Temperature, Pressure, Humidity\r\n");
+    /* Continuously stream sensor data */
+    while (1) {
+        rslt = bme280_set_sensor_mode(BME280_FORCED_MODE, dev);
+        /* Wait for the measurement to complete and print data @25Hz */
+        dev->delay_ms(40);
+        rslt = bme280_get_sensor_data(BME280_ALL, &comp_data, dev);
+        print_sensor_data(&comp_data);
+    }
+    return rslt;
 }
 
 void print_sensor_data(struct bme280_data *comp_data)
 {
-#ifdef FLOATING_POINT_REPRESENTATION
-		printf("%0.2f\t\t%0.2f\t\t%0.2f\t\n",comp_data->temperature, comp_data->pressure, comp_data->humidity);
+#ifdef BME280_FLOAT_ENABLE
+        printf("%0.2f, %0.2f, %0.2f\r\n",comp_data->temperature, comp_data->pressure, comp_data->humidity);
 #else
-		printf("%ld\t\t%ld\t\t%ld\t\n",comp_data->temperature, comp_data->pressure, comp_data->humidity);
+        printf("%ld, %ld, %ld\r\n",comp_data->temperature, comp_data->pressure, comp_data->humidity);
 #endif
 }
-
 ```
-##### Get sensor data in normal mode
+##### Stream sensor data in normal mode
 ``` c
-int8_t get_sensor_data_normal_mode(struct bme280_dev *dev)
+int8_t stream_sensor_data_normal_mode(struct bme280_dev *dev)
 {
 	int8_t rslt;
 	uint8_t settings_sel;
 	struct bme280_data comp_data;
 
-	dev->settings.osr_h = BME280_OVERSAMPLING_4X;
-	dev->settings.osr_p = BME280_OVERSAMPLING_4X;
-	dev->settings.osr_t = BME280_OVERSAMPLING_4X;
+	/* Recommended mode of operation: Indoor navigation */
+	dev->settings.osr_h = BME280_OVERSAMPLING_1X;
+	dev->settings.osr_p = BME280_OVERSAMPLING_16X;
+	dev->settings.osr_t = BME280_OVERSAMPLING_2X;
+	dev->settings.filter = BME280_FILTER_COEFF_16;
+	dev->settings.standby_time = BME280_STANDBY_TIME_62_5_MS;
 
-	settings_sel = BME280_OSR_PRESS_SEL|BME280_OSR_TEMP_SEL|BME280_OSR_HUM_SEL;
+	settings_sel = BME280_OSR_PRESS_SEL;
+	settings_sel |= BME280_OSR_TEMP_SEL;
+	settings_sel |= BME280_OSR_HUM_SEL;
+	settings_sel |= BME280_STANDBY_SEL;
+	settings_sel |= BME280_FILTER_SEL;
 	rslt = bme280_set_sensor_settings(settings_sel, dev);
 	rslt = bme280_set_sensor_mode(BME280_NORMAL_MODE, dev);
-	/* Give some delay for the sensor to go into normal mode */
-	dev->delay_ms(5);
-	
+
+	printf("Temperature, Pressure, Humidity\r\n");
 	while (1) {
-		rslt = bme280_get_sensor_data(BME280_PRESS | BME280_HUM | BME280_TEMP, &comp_data, dev);
+		/* Delay while the sensor completes a measurement */
+		dev->delay_ms(70);
+		rslt = bme280_get_sensor_data(BME280_ALL, &comp_data, dev);
 		print_sensor_data(&comp_data);
 	}
 
@@ -141,12 +151,129 @@ int8_t get_sensor_data_normal_mode(struct bme280_dev *dev)
 
 void print_sensor_data(struct bme280_data *comp_data)
 {
-#ifdef FLOATING_POINT_REPRESENTATION
-		printf("%0.2f\t\t%0.2f\t\t%0.2f\t\n",comp_data->temperature, comp_data->pressure, comp_data->humidity);
+#ifdef BME280_FLOAT_ENABLE
+        printf("%0.2f, %0.2f, %0.2f\r\n",comp_data->temperature, comp_data->pressure, comp_data->humidity);
 #else
-		printf("%ld\t\t%ld\t\t%ld\t\n",comp_data->temperature, comp_data->pressure, comp_data->humidity);
+        printf("%ld, %ld, %ld\r\n",comp_data->temperature, comp_data->pressure, comp_data->humidity);
 #endif
 }
+```
+
+### Templates for function pointers
+``` c
+
+void user_delay_ms(uint32_t period)
+{
+    /*
+     * Return control or wait,
+     * for a period amount of milliseconds
+     */
+}
+
+int8_t user_spi_read(uint8_t dev_id, uint8_t reg_addr, uint8_t *reg_data, uint16_t len)
+{
+    int8_t rslt = 0; /* Return 0 for Success, non-zero for failure */
+
+    /*
+     * The parameter dev_id can be used as a variable to select which Chip Select pin has
+     * to be set low to activate the relevant device on the SPI bus
+     */
+
+    /*
+     * Data on the bus should be like
+     * |----------------+---------------------+-------------|
+     * | MOSI           | MISO                | Chip Select |
+     * |----------------+---------------------|-------------|
+     * | (don't care)   | (don't care)        | HIGH        |
+     * | (reg_addr)     | (don't care)        | LOW         |
+     * | (don't care)   | (reg_data[0])       | LOW         |
+     * | (....)         | (....)              | LOW         |
+     * | (don't care)   | (reg_data[len - 1]) | LOW         |
+     * | (don't care)   | (don't care)        | HIGH        |
+     * |----------------+---------------------|-------------|
+     */
+
+    return rslt;
+}
+
+int8_t user_spi_write(uint8_t dev_id, uint8_t reg_addr, uint8_t *reg_data, uint16_t len)
+{
+    int8_t rslt = 0; /* Return 0 for Success, non-zero for failure */
+
+    /*
+     * The parameter dev_id can be used as a variable to select which Chip Select pin has
+     * to be set low to activate the relevant device on the SPI bus
+     */
+
+    /*
+     * Data on the bus should be like
+     * |---------------------+--------------+-------------|
+     * | MOSI                | MISO         | Chip Select |
+     * |---------------------+--------------|-------------|
+     * | (don't care)        | (don't care) | HIGH        |
+     * | (reg_addr)          | (don't care) | LOW         |
+     * | (reg_data[0])       | (don't care) | LOW         |
+     * | (....)              | (....)       | LOW         |
+     * | (reg_data[len - 1]) | (don't care) | LOW         |
+     * | (don't care)        | (don't care) | HIGH        |
+     * |---------------------+--------------|-------------|
+     */
+
+    return rslt;
+}
+
+int8_t user_i2c_read(uint8_t dev_id, uint8_t reg_addr, uint8_t *reg_data, uint16_t len)
+{
+    int8_t rslt = 0; /* Return 0 for Success, non-zero for failure */
+
+    /*
+     * The parameter dev_id can be used as a variable to store the I2C address of the device
+     */
+
+    /*
+     * Data on the bus should be like
+     * |------------+---------------------|
+     * | I2C action | Data                |
+     * |------------+---------------------|
+     * | Start      | -                   |
+     * | Write      | (reg_addr)          |
+     * | Stop       | -                   |
+     * | Start      | -                   |
+     * | Read       | (reg_data[0])       |
+     * | Read       | (....)              |
+     * | Read       | (reg_data[len - 1]) |
+     * | Stop       | -                   |
+     * |------------+---------------------|
+     */
+
+    return rslt;
+}
+
+int8_t user_i2c_write(uint8_t dev_id, uint8_t reg_addr, uint8_t *reg_data, uint16_t len)
+{
+    int8_t rslt = 0; /* Return 0 for Success, non-zero for failure */
+
+    /*
+     * The parameter dev_id can be used as a variable to store the I2C address of the device
+     */
+
+    /*
+     * Data on the bus should be like
+     * |------------+---------------------|
+     * | I2C action | Data                |
+     * |------------+---------------------|
+     * | Start      | -                   |
+     * | Write      | (reg_addr)          |
+     * | Write      | (reg_data[0])       |
+     * | Write      | (....)              |
+     * | Write      | (reg_data[len - 1]) |
+     * | Stop       | -                   |
+     * |------------+---------------------|
+     */
+
+    return rslt;
+}
+
 ```
 
 ## Copyright (C) 2016 - 2017 Bosch Sensortec GmbH

@@ -40,8 +40,8 @@
  * patent rights of the copyright holder.
  *
  * File		bme280.c
- * Date		21 Mar 2017
- * Version	3.2.0
+ * Date		13 Jul 2017
+ * Version	3.3.0
  *
  */
 
@@ -158,7 +158,7 @@ static void parse_sensor_data(const uint8_t *reg_data, struct bme280_uncomp_data
 static int8_t compensate_data(uint8_t sensor_comp, const struct bme280_uncomp_data *uncomp_data,
 				     struct bme280_data *comp_data, struct bme280_calib_data *calib_data);
 
-#ifdef FLOATING_POINT_REPRESENTATION
+#ifdef BME280_FLOAT_ENABLE
 /*!
  * @brief This internal API is used to compensate the raw pressure data and
  * return the compensated pressure data in double data type.
@@ -426,10 +426,10 @@ int8_t bme280_get_regs(uint8_t reg_addr, uint8_t *reg_data, uint16_t len, const 
 	/* Proceed if null check is fine */
 	if (rslt == BME280_OK) {
 		/* If interface selected is SPI */
-		if (dev->interface != BME280_I2C_INTF)
+		if (dev->intf != BME280_I2C_INTF)
 			reg_addr = reg_addr | 0x80;
 		/* Read the data  */
-		rslt = dev->read(dev->id, reg_addr, reg_data, len);
+		rslt = dev->read(dev->dev_id, reg_addr, reg_data, len);
 		/* Check for communication error */
 		if (rslt != BME280_OK)
 			rslt = BME280_E_COMM_FAIL;
@@ -445,7 +445,10 @@ int8_t bme280_get_regs(uint8_t reg_addr, uint8_t *reg_data, uint16_t len, const 
 int8_t bme280_set_regs(uint8_t *reg_addr, const uint8_t *reg_data, uint8_t len, const struct bme280_dev *dev)
 {
 	int8_t rslt;
-	uint8_t temp_buff[len * 2];
+	uint8_t temp_buff[20]; /* Typically not to write more than 10 registers */
+	if(len > 10)
+		len = 10;
+
 	uint16_t temp_len;
 	uint8_t reg_addr_cnt;
 
@@ -456,7 +459,7 @@ int8_t bme280_set_regs(uint8_t *reg_addr, const uint8_t *reg_data, uint8_t len, 
 		if (len != 0) {
 			temp_buff[0] = reg_data[0];
 			/* If interface selected is SPI */
-			if (dev->interface != BME280_I2C_INTF) {
+			if (dev->intf != BME280_I2C_INTF) {
 				for (reg_addr_cnt = 0; reg_addr_cnt < len; reg_addr_cnt++)
 					reg_addr[reg_addr_cnt] = reg_addr[reg_addr_cnt] & 0x7F;
 			}
@@ -469,7 +472,7 @@ int8_t bme280_set_regs(uint8_t *reg_addr, const uint8_t *reg_data, uint8_t len, 
 			} else {
 				temp_len = len;
 			}
-			rslt = dev->write(dev->id, reg_addr[0], temp_buff, temp_len);
+			rslt = dev->write(dev->dev_id, reg_addr[0], temp_buff, temp_len);
 			/* Check for communication error */
 			if (rslt != BME280_OK)
 				rslt = BME280_E_COMM_FAIL;
@@ -848,15 +851,15 @@ static void parse_sensor_data(const uint8_t *reg_data, struct bme280_uncomp_data
 	uint32_t data_msb;
 
 	/* Store the parsed register values for pressure data */
-	data_xlsb = (uint32_t)reg_data[0] << 12;
+	data_msb = (uint32_t)reg_data[0] << 12;
 	data_lsb = (uint32_t)reg_data[1] << 4;
-	data_msb = (uint32_t)reg_data[2] << 4;
+	data_xlsb = (uint32_t)reg_data[2] >> 4;
 	uncomp_data->pressure = data_msb | data_lsb | data_xlsb;
 
 	/* Store the parsed register values for temperature data */
-	data_xlsb = (uint32_t)reg_data[3] << 12;
+	data_msb = (uint32_t)reg_data[3] << 12;
 	data_lsb = (uint32_t)reg_data[4] << 4;
-	data_msb = (uint32_t)reg_data[5] << 4;
+	data_xlsb = (uint32_t)reg_data[5] >> 4;
 	uncomp_data->temperature = data_msb | data_lsb | data_xlsb;
 
 	/* Store the parsed register values for temperature data */
@@ -900,7 +903,7 @@ static int8_t compensate_data(uint8_t sensor_comp, const struct bme280_uncomp_da
 	return rslt;
 }
 
-#ifdef FLOATING_POINT_REPRESENTATION
+#ifdef BME280_FLOAT_ENABLE
 /*!
  * @brief This internal API is used to compensate the raw temperature data and
  * return the compensated temperature data in double data type.
@@ -1031,7 +1034,7 @@ static int32_t compensate_temperature(const struct bme280_uncomp_data *uncomp_da
 
 	return temperature;
 }
-#ifdef MACHINE_64_BIT
+#ifdef BME280_64BIT_ENABLE
 /*!
  * @brief This internal API is used to compensate the raw pressure data and
  * return the compensated pressure data in integer data type with higher
@@ -1052,14 +1055,14 @@ static uint32_t compensate_pressure(const struct bme280_uncomp_data *uncomp_data
 	var2 = var1 * var1 * (int64_t)calib_data->dig_P6;
 	var2 = var2 + ((var1 * (int64_t)calib_data->dig_P5) * 131072);
 	var2 = var2 + (((int64_t)calib_data->dig_P4) * 34359738368);
-	var1 = ((var1 * var1 * (int64_t)calib_data->dig_P3) / 256) + ((var1 * (int64_t)calib_data->dig_P2) * 4096);
+	var1 = ((var1 * var1 * (int64_t)calib_data->dig_P3) / 256) + ((var1 * ((int64_t)calib_data->dig_P2) * 4096));
 	var3 = ((int64_t)1) * 140737488355328;
 	var1 = (var3 + var1) * ((int64_t)calib_data->dig_P1) / 8589934592;
 
 	/* To avoid divide by zero exception */
 	if (var1 != 0) {
 		var4 = 1048576 - uncomp_data->pressure;
-		var4 = (((var4 * (2147483648UL)) - var2) * 3125) / var1;
+		var4 = (((var4 * 2147483648) - var2) * 3125) / var1;
 		var1 = (((int64_t)calib_data->dig_P9) * (var4 / 8192) * (var4 / 8192)) / 33554432;
 		var2 = (((int64_t)calib_data->dig_P8) * var4) / 524288;
 		var4 = ((var4 + var1 + var2) / 256) + (((int64_t)calib_data->dig_P7) * 16);
