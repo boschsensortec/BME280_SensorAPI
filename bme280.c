@@ -40,8 +40,8 @@
  * patent rights of the copyright holder.
  *
  * File		bme280.c
- * Date		13 Jul 2017
- * Version	3.3.0
+ * Date		07 Nov 2017
+ * Version	3.3.1
  *
  */
 
@@ -128,35 +128,6 @@ static void parse_temp_press_calib_data(const uint8_t *reg_data, struct bme280_d
  *  @param[in] reg_data : Contains calibration data to be parsed.
  */
 static void parse_humidity_calib_data(const uint8_t *reg_data, struct bme280_dev *dev);
-
-/*!
- *  @brief This internal API is used to parse the pressure, temperature and
- *  humidity data and store it in the bme280_uncomp_data structure instance.
- *
- *  @param[in] reg_data : Contains the register data which needs to be parsed.
- *  @param[out] uncomp_data : Contains the uncompensated pressure, temperature
- *  and humidity data.
- */
-static void parse_sensor_data(const uint8_t *reg_data, struct bme280_uncomp_data *uncomp_data);
-
-/*!
- * @brief This internal API is used to compensate the pressure and/or
- * temperature and/or humidity data according to the component selected by the
- * user.
- *
- * @param[in] sensor_comp : Used to select pressure and/or temperature and/or
- * humidity.
- * @param[in] uncomp_data : Contains the uncompensated pressure, temperature and
- * humidity data.
- * @param[out] comp_data : Contains the compensated pressure and/or temperature
- * and/or humidity data.
- * @param[in] calib_data : Pointer to the calibration data structure.
- *
- * @return Result of API execution status.
- * @retval zero -> Success / -ve value -> Error
- */
-static int8_t compensate_data(uint8_t sensor_comp, const struct bme280_uncomp_data *uncomp_data,
-				     struct bme280_data *comp_data, struct bme280_calib_data *calib_data);
 
 #ifdef BME280_FLOAT_ENABLE
 /*!
@@ -446,7 +417,8 @@ int8_t bme280_set_regs(uint8_t *reg_addr, const uint8_t *reg_data, uint8_t len, 
 {
 	int8_t rslt;
 	uint8_t temp_buff[20]; /* Typically not to write more than 10 registers */
-	if(len > 10)
+
+	if (len > 10)
 		len = 10;
 
 	uint16_t temp_len;
@@ -629,10 +601,75 @@ int8_t bme280_get_sensor_data(uint8_t sensor_comp, struct bme280_data *comp_data
 
 		if (rslt == BME280_OK) {
 			/* Parse the read data from the sensor */
-			parse_sensor_data(reg_data, &uncomp_data);
+			bme280_parse_sensor_data(reg_data, &uncomp_data);
 			/* Compensate the pressure and/or temperature and/or
 			   humidity data from the sensor */
-			rslt = compensate_data(sensor_comp, &uncomp_data, comp_data, &dev->calib_data);
+			rslt = bme280_compensate_data(sensor_comp, &uncomp_data, comp_data, &dev->calib_data);
+		}
+	} else {
+		rslt = BME280_E_NULL_PTR;
+	}
+
+	return rslt;
+}
+
+/*!
+ *  @brief This API is used to parse the pressure, temperature and
+ *  humidity data and store it in the bme280_uncomp_data structure instance.
+ */
+void bme280_parse_sensor_data(const uint8_t *reg_data, struct bme280_uncomp_data *uncomp_data)
+{
+	/* Variables to store the sensor data */
+	uint32_t data_xlsb;
+	uint32_t data_lsb;
+	uint32_t data_msb;
+
+	/* Store the parsed register values for pressure data */
+	data_msb = (uint32_t)reg_data[0] << 12;
+	data_lsb = (uint32_t)reg_data[1] << 4;
+	data_xlsb = (uint32_t)reg_data[2] >> 4;
+	uncomp_data->pressure = data_msb | data_lsb | data_xlsb;
+
+	/* Store the parsed register values for temperature data */
+	data_msb = (uint32_t)reg_data[3] << 12;
+	data_lsb = (uint32_t)reg_data[4] << 4;
+	data_xlsb = (uint32_t)reg_data[5] >> 4;
+	uncomp_data->temperature = data_msb | data_lsb | data_xlsb;
+
+	/* Store the parsed register values for temperature data */
+	data_lsb = (uint32_t)reg_data[6] << 8;
+	data_msb = (uint32_t)reg_data[7];
+	uncomp_data->humidity = data_msb | data_lsb;
+}
+
+
+/*!
+ * @brief This API is used to compensate the pressure and/or
+ * temperature and/or humidity data according to the component selected
+ * by the user.
+ */
+int8_t bme280_compensate_data(uint8_t sensor_comp, const struct bme280_uncomp_data *uncomp_data,
+				     struct bme280_data *comp_data, struct bme280_calib_data *calib_data)
+{
+	int8_t rslt = BME280_OK;
+
+	if ((uncomp_data != NULL) && (comp_data != NULL) && (calib_data != NULL)) {
+		/* Initialize to zero */
+		comp_data->temperature = 0;
+		comp_data->pressure = 0;
+		comp_data->humidity = 0;
+		/* If pressure or temperature component is selected */
+		if (sensor_comp & (BME280_PRESS | BME280_TEMP | BME280_HUM)) {
+			/* Compensate the temperature data */
+			comp_data->temperature = compensate_temperature(uncomp_data, calib_data);
+		}
+		if (sensor_comp & BME280_PRESS) {
+			/* Compensate the pressure data */
+			comp_data->pressure = compensate_pressure(uncomp_data, calib_data);
+		}
+		if (sensor_comp & BME280_HUM) {
+			/* Compensate the humidity data */
+			comp_data->humidity = compensate_humidity(uncomp_data, calib_data);
 		}
 	} else {
 		rslt = BME280_E_NULL_PTR;
@@ -835,70 +872,6 @@ static int8_t reload_device_settings(const struct bme280_settings *settings, con
 	rslt = set_osr_settings(BME280_ALL_SETTINGS_SEL, settings, dev);
 	if (rslt == BME280_OK)
 		rslt = set_filter_standby_settings(BME280_ALL_SETTINGS_SEL, settings, dev);
-
-	return rslt;
-}
-
-/*!
- *  @brief This internal API is used to parse the pressure, temperature and
- *  humidity data and store it in the bme280_uncomp_data structure instance.
- */
-static void parse_sensor_data(const uint8_t *reg_data, struct bme280_uncomp_data *uncomp_data)
-{
-	/* Variables to store the sensor data */
-	uint32_t data_xlsb;
-	uint32_t data_lsb;
-	uint32_t data_msb;
-
-	/* Store the parsed register values for pressure data */
-	data_msb = (uint32_t)reg_data[0] << 12;
-	data_lsb = (uint32_t)reg_data[1] << 4;
-	data_xlsb = (uint32_t)reg_data[2] >> 4;
-	uncomp_data->pressure = data_msb | data_lsb | data_xlsb;
-
-	/* Store the parsed register values for temperature data */
-	data_msb = (uint32_t)reg_data[3] << 12;
-	data_lsb = (uint32_t)reg_data[4] << 4;
-	data_xlsb = (uint32_t)reg_data[5] >> 4;
-	uncomp_data->temperature = data_msb | data_lsb | data_xlsb;
-
-	/* Store the parsed register values for temperature data */
-	data_lsb = (uint32_t)reg_data[6] << 8;
-	data_msb = (uint32_t)reg_data[7];
-	uncomp_data->humidity = data_msb | data_lsb;
-}
-
-/*!
- * @brief This internal API is used to compensate the pressure and/or
- * temperature and/or humidity data according to the component selected
- * by the user.
- */
-static int8_t compensate_data(uint8_t sensor_comp, const struct bme280_uncomp_data *uncomp_data,
-				     struct bme280_data *comp_data, struct bme280_calib_data *calib_data)
-{
-	int8_t rslt = BME280_OK;
-
-	if ((uncomp_data != NULL) && (comp_data != NULL) && (calib_data != NULL)) {
-		/* Initialize to zero */
-		comp_data->temperature = 0;
-		comp_data->pressure = 0;
-		comp_data->humidity = 0;
-		/* If pressure or temperature component is selected */
-		if (sensor_comp & (BME280_PRESS | BME280_TEMP | BME280_HUM)) {
-			/* Compensate the temperature data */
-			comp_data->temperature = compensate_temperature(uncomp_data, calib_data);
-		}
-		if (sensor_comp & BME280_PRESS) {
-			/* Compensate the pressure data */
-			comp_data->pressure = compensate_pressure(uncomp_data, calib_data);
-		}
-		if (sensor_comp & BME280_HUM) {
-			/* Compensate the humidity data */
-			comp_data->humidity = compensate_humidity(uncomp_data, calib_data);
-		}
-	} else {
-		rslt = BME280_E_NULL_PTR;
-	}
 
 	return rslt;
 }

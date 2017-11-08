@@ -5,11 +5,11 @@ This package contains the Bosch Sensortec's BME280 pressure sensor driver (senso
 The sensor driver package includes bme280.c, bme280.h and bme280_defs.h files.
 
 ## Version
-File | Version | Date
------|---------|-----
-bme280.c |  3.3.0     | 13 Jul 2017
-bme280.h |  3.3.0     | 13 Jul 2017
-bme280_defs.h |  3.3.0     | 13 Jul 2017
+File          | Version | Date
+--------------|---------|------------
+bme280.c      |  3.3.1  | 07 Nov 2017
+bme280.h      |  3.3.1  | 07 Nov 2017
+bme280_defs.h |  3.3.1  | 07 Nov 2017
 
 ## Integration details
 * Integrate bme280.h, bme280_defs.h and bme280.c file in to the project.

@@ -1,6 +1,12 @@
 # Change Log
 All notable changes to BME280 Sensor API will be documented in this file.
 
+## v3.3.1, 07 Nov 2017
+### Changed
+	- Created the following user APIs which were previously static
+	   * bme280_parse_sensor_data
+	   * bme280_compensate_data
+
 ## v3.3.0, 13 Jul 2017
 ### Changed
 	- Changed macro FLOATING_POINT_REPRESENTATION to BME280_FLOAT_ENABLE

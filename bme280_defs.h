@@ -40,8 +40,8 @@
  * patent rights of the copyright holder.
  *
  * @file	bme280_defs.h
- * @date	13 Jul 2017
- * @version	3.3.0
+ * @date	07 Nov 2017
+ * @version	3.3.1
  * @brief
  *
  */
@@ -121,13 +121,13 @@
 #endif
 
 #ifndef BME280_FLOAT_ENABLE
-//#define BME280_FLOAT_ENABLE
+/* #define BME280_FLOAT_ENABLE */
 #endif
 
 #ifndef BME280_FLOAT_ENABLE
-#	ifndef BME280_64BIT_ENABLE
-#		define BME280_64BIT_ENABLE
-#	endif
+#ifndef BME280_64BIT_ENABLE
+#define BME280_64BIT_ENABLE
+#endif
 #endif
 
 #ifndef TRUE
