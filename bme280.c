@@ -40,8 +40,8 @@
  * patent rights of the copyright holder.
  *
  * File		bme280.c
- * Date		07 Nov 2017
- * Version	3.3.1
+ * Date		22 Nov 2017
+ * Version	3.3.2
  *
  */
 

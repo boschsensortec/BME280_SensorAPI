@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to BME280 Sensor API will be documented in this file.
 
+## v3.3.2, 22 Nov 2017
+### Changed
+	- Linux compatibility issue fixed
+
 ## v3.3.1, 07 Nov 2017
 ### Changed
 	- Created the following user APIs which were previously static

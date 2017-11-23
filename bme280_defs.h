@@ -40,8 +40,8 @@
  * patent rights of the copyright holder.
  *
  * @file	bme280_defs.h
- * @date	07 Nov 2017
- * @version	3.3.1
+ * @date	22 Nov 2017
+ * @version	3.3.2
  * @brief
  *
  */
@@ -59,56 +59,36 @@
 /* header includes */
 #ifdef __KERNEL__
 #include <linux/types.h>
+#include <linux/kernel.h>
 #else
 #include <stdint.h>
-#include <stdio.h>
+#include <stddef.h>
 #endif
 
-#ifdef __KERNEL__
-#if (LONG_MAX) > 0x7fffffff
-#define __have_long64	1
-#elif (LONG_MAX) == 0x7fffffff
-#define __have_long32	1
+/********************************************************/
+/*! @name		Common macros		        */
+/********************************************************/
+
+#if !defined(UINT8_C) && !defined(INT8_C)
+#define INT8_C(x)       S8_C(x)
+#define UINT8_C(x)      U8_C(x)
 #endif
 
-#if !defined(UINT8_C)
-#define INT8_C(x)       x
-#if (INT_MAX) > 0x7f
-#define UINT8_C(x)      x
-#else
-#define UINT8_C(x)      x##U
-#endif
-#endif
-
-#if !defined(UINT16_C)
-#define INT16_C(x)      x
-#if (INT_MAX) > 0x7fff
-#define UINT16_C(x)     x
-#else
-#define UINT16_C(x)     x##U
-#endif
+#if !defined(UINT16_C) && !defined(INT16_C)
+#define INT16_C(x)      S16_C(x)
+#define UINT16_C(x)     U16_C(x)
 #endif
 
 #if !defined(INT32_C) && !defined(UINT32_C)
-#if __have_long32
-#define INT32_C(x)      x##L
-#define UINT32_C(x)     x##UL
-#else
-#define INT32_C(x)      x
-#define UINT32_C(x)     x##U
-#endif
+#define INT32_C(x)      S32_C(x)
+#define UINT32_C(x)     U32_C(x)
 #endif
 
 #if !defined(INT64_C) && !defined(UINT64_C)
-#if __have_long64
-#define INT64_C(x)      x##L
-#define UINT64_C(x)     x##UL
-#else
-#define INT64_C(x)      x##LL
-#define UINT64_C(x)     x##ULL
+#define INT64_C(x)      S64_C(x)
+#define UINT64_C(x)     U64_C(x)
 #endif
-#endif
-#endif
+
 /**@}*/
 
 /**\name C standard macros */
@@ -119,6 +99,7 @@
 #define NULL   ((void *) 0)
 #endif
 #endif
+/********************************************************/
 
 #ifndef BME280_FLOAT_ENABLE
 /* #define BME280_FLOAT_ENABLE */
@@ -157,14 +138,16 @@
 
 /**\name API success code */
 #define BME280_OK					INT8_C(0)
+
 /**\name API error codes */
 #define BME280_E_NULL_PTR			INT8_C(-1)
 #define BME280_E_DEV_NOT_FOUND		INT8_C(-2)
 #define BME280_E_INVALID_LEN		INT8_C(-3)
 #define BME280_E_COMM_FAIL			INT8_C(-4)
 #define BME280_E_SLEEP_MODE_FAIL	INT8_C(-5)
+
 /**\name API warning codes */
-#define BME280_W_INVALID_OSR_MACRO	UINT8_C(1)
+#define BME280_W_INVALID_OSR_MACRO      INT8_C(1)
 
 /**\name Macros related to size */
 #define BME280_TEMP_PRESS_CALIB_DATA_LEN	UINT8_C(26)
