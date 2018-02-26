@@ -7,9 +7,9 @@ The sensor driver package includes bme280.c, bme280.h and bme280_defs.h files.
 ## Version
 File          | Version | Date
 --------------|---------|------------
-bme280.c      |  3.3.2  | 22 Nov 2017
-bme280.h      |  3.3.2  | 22 Nov 2017
-bme280_defs.h |  3.3.2  | 22 Nov 2017
+bme280.c      |  3.3.4  | 14 Feb 2018
+bme280.h      |  3.3.4  | 14 Feb 2018
+bme280_defs.h |  3.3.4  | 14 Feb 2018
 
 ## Integration details
 * Integrate bme280.h, bme280_defs.h and bme280.c file in to the project.
@@ -73,6 +73,27 @@ In integer compensation functions, we also have below two implementations for pr
 
 By default, 64 bit variant is used in the API. If the user wants 32 bit variant, the user can disable the
 macro BME280_64BIT_ENABLE in bme280_defs.h file.
+
+### Sensor data units
+> The sensor data units depends on the following macros being enabled or not, 
+> (in bme280_defs.h file or as compiler macros)
+>   * BME280_FLOAT_ENABLE
+>   * BME280_64BIT_ENABLE
+
+In case of the macro "BME280_FLOAT_ENABLE" enabled,
+The outputs are in double and the units are
+
+    - °C for temperature
+    - % relative humidity
+    - Pascal for pressure
+
+In case if "BME280_FLOAT_ENABLE" is not enabled, then it is
+
+    - int32_t for temperature with the units 100 * °C
+    - uint32_t for humidity with the units 1024 * % relative humidity
+    - uint32_t for pressure
+         If macro "BME280_64BIT_ENABLE" is enabled, which it is by default, the unit is 100 * Pascal
+         If this macro is disabled, Then the unit is in Pascal
 
 ### Stream sensor data
 #### Stream sensor data in forced mode

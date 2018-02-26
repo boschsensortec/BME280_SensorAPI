@@ -40,8 +40,8 @@
  * patent rights of the copyright holder.
  *
  * File		bme280.c
- * Date		22 Nov 2017
- * Version	3.3.2
+ * Date		14 Feb 2018
+ * Version	3.3.4
  *
  */
 
@@ -440,7 +440,7 @@ int8_t bme280_set_regs(uint8_t *reg_addr, const uint8_t *reg_data, uint8_t len, 
 				/* Interleave register address w.r.t data for
 				burst write*/
 				interleave_reg_addr(reg_addr, temp_buff, reg_data, len);
-				temp_len = len * 2;
+				temp_len = ((len * 2) - 1);
 			} else {
 				temp_len = len;
 			}
@@ -1114,7 +1114,7 @@ static uint32_t compensate_humidity(const struct bme280_uncomp_data *uncomp_data
 	int32_t var4;
 	int32_t var5;
 	uint32_t humidity;
-	uint32_t humidity_max = 100000;
+	uint32_t humidity_max = 102400;
 
 	var1 = calib_data->t_fine - ((int32_t)76800);
 	var2 = (int32_t)(uncomp_data->humidity * 16384);
