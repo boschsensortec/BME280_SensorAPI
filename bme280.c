@@ -417,12 +417,11 @@ int8_t bme280_set_regs(uint8_t *reg_addr, const uint8_t *reg_data, uint8_t len, 
 {
 	int8_t rslt;
 	uint8_t temp_buff[20]; /* Typically not to write more than 10 registers */
+	uint16_t temp_len;
+	uint8_t reg_addr_cnt;
 
 	if (len > 10)
 		len = 10;
-
-	uint16_t temp_len;
-	uint8_t reg_addr_cnt;
 
 	/* Check for null pointer in the device structure*/
 	rslt = null_ptr_check(dev);
