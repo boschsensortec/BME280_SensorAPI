@@ -1034,7 +1034,7 @@ static uint32_t compensate_pressure(const struct bme280_uncomp_data *uncomp_data
 	/* To avoid divide by zero exception */
 	if (var1 != 0) {
 		var4 = 1048576 - uncomp_data->pressure;
-		var4 = (((var4 * 2147483648) - var2) * 3125) / var1;
+		var4 = (((var4 * 2147483648LL) - var2) * 3125) / var1;
 		var1 = (((int64_t)calib_data->dig_P9) * (var4 / 8192) * (var4 / 8192)) / 33554432;
 		var2 = (((int64_t)calib_data->dig_P8) * var4) / 524288;
 		var4 = ((var4 + var1 + var2) / 256) + (((int64_t)calib_data->dig_P7) * 16);
