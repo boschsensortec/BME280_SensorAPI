@@ -417,12 +417,11 @@ int8_t bme280_set_regs(uint8_t *reg_addr, const uint8_t *reg_data, uint8_t len, 
 {
 	int8_t rslt;
 	uint8_t temp_buff[20]; /* Typically not to write more than 10 registers */
+	uint16_t temp_len;
+	uint8_t reg_addr_cnt;
 
 	if (len > 10)
 		len = 10;
-
-	uint16_t temp_len;
-	uint8_t reg_addr_cnt;
 
 	/* Check for null pointer in the device structure*/
 	rslt = null_ptr_check(dev);
@@ -1035,7 +1034,7 @@ static uint32_t compensate_pressure(const struct bme280_uncomp_data *uncomp_data
 	/* To avoid divide by zero exception */
 	if (var1 != 0) {
 		var4 = 1048576 - uncomp_data->pressure;
-		var4 = (((var4 * 2147483648) - var2) * 3125) / var1;
+		var4 = (((var4 * 2147483648LL) - var2) * 3125) / var1;
 		var1 = (((int64_t)calib_data->dig_P9) * (var4 / 8192) * (var4 / 8192)) / 33554432;
 		var2 = (((int64_t)calib_data->dig_P8) * var4) / 524288;
 		var4 = ((var4 + var1 + var2) / 256) + (((int64_t)calib_data->dig_P7) * 16);
@@ -1120,13 +1119,13 @@ static uint32_t compensate_humidity(const struct bme280_uncomp_data *uncomp_data
 	var2 = (int32_t)(uncomp_data->humidity * 16384);
 	var3 = (int32_t)(((int32_t)calib_data->dig_H4) * 1048576);
 	var4 = ((int32_t)calib_data->dig_H5) * var1;
-	var5 = (((var2 - var3) - var4) + (int32_t)16384) / 32768;
+	var5 = (((var2 - var3) - var4) + (int32_t)16384) / 32768L;
 	var2 = (var1 * ((int32_t)calib_data->dig_H6)) / 1024;
 	var3 = (var1 * ((int32_t)calib_data->dig_H3)) / 2048;
-	var4 = ((var2 * (var3 + (int32_t)32768)) / 1024) + (int32_t)2097152;
+	var4 = ((var2 * (var3 + (int32_t)32768L)) / 1024L) + (int32_t)2097152;
 	var2 = ((var4 * ((int32_t)calib_data->dig_H2)) + 8192) / 16384;
 	var3 = var5 * var2;
-	var4 = ((var3 / 32768) * (var3 / 32768)) / 128;
+	var4 = ((var3 / 32768L) * (var3 / 32768L)) / 128;
 	var5 = var3 - ((var4 * ((int32_t)calib_data->dig_H1)) / 16);
 	var5 = (var5 < 0 ? 0 : var5);
 	var5 = (var5 > 419430400 ? 419430400 : var5);
