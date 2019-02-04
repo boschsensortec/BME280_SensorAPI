@@ -186,11 +186,11 @@
 #define BME280_CTRL_TEMP_MSK	UINT8_C(0xE0)
 #define BME280_CTRL_TEMP_POS	UINT8_C(0x05)
 
-#define BME280_FILTER_MSK		UINT8_C(0x1C)
-#define BME280_FILTER_POS		UINT8_C(0x02)
+#define BME280_FILTER_MSK		UINT8_C(0x0E)
+#define BME280_FILTER_POS		UINT8_C(0x01)
 
-#define BME280_STANDBY_MSK		UINT8_C(0xE0)
-#define BME280_STANDBY_POS		UINT8_C(0x05)
+#define BME280_STANDBY_MSK		UINT8_C(0x70)
+#define BME280_STANDBY_POS		UINT8_C(0x04)
 
 /**\name Sensor component selection macros
    These values are internal for API implementation. Don't relate this to
@@ -217,7 +217,7 @@
 #define BME280_OVERSAMPLING_16X		UINT8_C(0x05)
 
 /**\name Standby duration selection macros */
-#define BME280_STANDBY_TIME_1_MS              (0x00)
+#define BME280_STANDBY_TIME_05_MS             (0x00)
 #define BME280_STANDBY_TIME_62_5_MS           (0x01)
 #define BME280_STANDBY_TIME_125_MS			  (0x02)
 #define BME280_STANDBY_TIME_250_MS            (0x03)
