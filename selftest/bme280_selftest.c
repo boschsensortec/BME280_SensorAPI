@@ -1,5 +1,5 @@
 /**\mainpage
- * Copyright (C) 2016 - 2017 Bosch Sensortec GmbH
+ * Copyright (C) 2018 - 2019 Bosch Sensortec GmbH
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -39,20 +39,20 @@
  * No license is granted by implication or otherwise under any patent or
  * patent rights of the copyright holder.
  *
- * File		bme280_selftest.c
- * Date		21 Nov 2017
- * Version	1.0.0
+ * File     bme280_selftest.c
+ * Date     08 Mar 2019
+ * Version  3.3.6
  *
  */
 
 #include "bme280_selftest.h"
 
-#define BME280_CRC_DATA_ADDR	UINT8_C(0xE8)
-#define BME280_CRC_DATA_LEN	UINT8_C(1)
-#define BME280_CRC_CALIB1_ADDR	UINT8_C(0x88)
-#define BME280_CRC_CALIB1_LEN	UINT8_C(26)
-#define BME280_CRC_CALIB2_ADDR	UINT8_C(0xE1)
-#define BME280_CRC_CALIB2_LEN	UINT8_C(7)
+#define BME280_CRC_DATA_ADDR   UINT8_C(0xE8)
+#define BME280_CRC_DATA_LEN    UINT8_C(1)
+#define BME280_CRC_CALIB1_ADDR UINT8_C(0x88)
+#define BME280_CRC_CALIB1_LEN  UINT8_C(26)
+#define BME280_CRC_CALIB2_ADDR UINT8_C(0xE1)
+#define BME280_CRC_CALIB2_LEN  UINT8_C(7)
 
 /*!
  * @brief This API calculates the CRC
@@ -75,36 +75,44 @@ static uint8_t crc_calculate(uint8_t *mem_values, uint8_t mem_length);
  */
 int8_t bme280_crc_selftest(const struct bme280_dev *dev)
 {
-	int8_t rslt;
-	uint8_t reg_addr;
-	uint8_t reg_data[64];
+    int8_t rslt;
+    uint8_t reg_addr;
+    uint8_t reg_data[64];
+    uint8_t stored_crc = 0;
+    uint8_t calculated_crc = 0;
 
-	uint8_t stored_crc = 0;
-	uint8_t calculated_crc = 0;
+    /* Read stored crc value from register */
+    reg_addr = BME280_CRC_DATA_ADDR;
+    rslt = bme280_get_regs(reg_addr, reg_data, BME280_CRC_DATA_LEN, dev);
+    if (rslt == BME280_OK)
+    {
+        stored_crc = reg_data[0];
 
-	/* Read stored crc value from register */
-	reg_addr = BME280_CRC_DATA_ADDR;
-	rslt = bme280_get_regs(reg_addr, reg_data, BME280_CRC_DATA_LEN, dev);
-	if (rslt == BME280_OK) {
-		stored_crc = reg_data[0];
-		/* Calculated CRC value with calibration register */
-		reg_addr = BME280_CRC_CALIB1_ADDR;
-		rslt = bme280_get_regs(reg_addr, &reg_data[0], BME280_CRC_CALIB1_LEN, dev);
-		if (rslt == BME280_OK) {
-			reg_addr = BME280_CRC_CALIB2_ADDR;
-			rslt = bme280_get_regs(reg_addr, &reg_data[BME280_CRC_CALIB1_LEN], BME280_CRC_CALIB2_LEN, dev);
-			if (rslt == BME280_OK) {
-				calculated_crc = crc_calculate(reg_data, BME280_CRC_CALIB1_LEN + BME280_CRC_CALIB2_LEN);
-				/* Validate CRC */
-				if (stored_crc == calculated_crc)
-					rslt = BME280_OK;
-				else
-					rslt = BME280_W_SELF_TEST_FAIL;
-			}
-		}
-	}
+        /* Calculated CRC value with calibration register */
+        reg_addr = BME280_CRC_CALIB1_ADDR;
+        rslt = bme280_get_regs(reg_addr, &reg_data[0], BME280_CRC_CALIB1_LEN, dev);
+        if (rslt == BME280_OK)
+        {
+            reg_addr = BME280_CRC_CALIB2_ADDR;
+            rslt = bme280_get_regs(reg_addr, &reg_data[BME280_CRC_CALIB1_LEN], BME280_CRC_CALIB2_LEN, dev);
+            if (rslt == BME280_OK)
+            {
+                calculated_crc = crc_calculate(reg_data, BME280_CRC_CALIB1_LEN + BME280_CRC_CALIB2_LEN);
 
-	return rslt;
+                /* Validate CRC */
+                if (stored_crc == calculated_crc)
+                {
+                    rslt = BME280_OK;
+                }
+                else
+                {
+                    rslt = BME280_W_SELF_TEST_FAIL;
+                }
+            }
+        }
+    }
+
+    return rslt;
 }
 
 /*!
@@ -118,24 +126,30 @@ int8_t bme280_crc_selftest(const struct bme280_dev *dev)
  */
 static uint8_t crc_calculate(uint8_t *mem_values, uint8_t mem_length)
 {
-	uint32_t crc_reg = 0xFF;
-	uint8_t polynomial = 0x1D;
-	uint8_t bitNo, index;
-	uint8_t din = 0;
+    uint32_t crc_reg = 0xFF;
+    uint8_t polynomial = 0x1D;
+    uint8_t bitNo, index;
+    uint8_t din = 0;
 
-	for (index = 0; index < mem_length; index++) {
-		for (bitNo = 0; bitNo < 8; bitNo++) {
-			if (((crc_reg & 0x80) > 0) ^ ((mem_values[index] & 0x80) > 0))
-				din = 1;
-			else
-				din = 0;
+    for (index = 0; index < mem_length; index++)
+    {
+        for (bitNo = 0; bitNo < 8; bitNo++)
+        {
+            if (((crc_reg & 0x80) > 0) != ((mem_values[index] & 0x80) > 0))
+            {
+                din = 1;
+            }
+            else
+            {
+                din = 0;
+            }
 
-			/* Truncate 8th bit for crc_reg and mem_values */
-			crc_reg = (uint32_t)((crc_reg & 0x7F) << 1);
-			mem_values[index] = (uint8_t)((mem_values[index] & 0x7F) << 1);
-			crc_reg = (uint32_t)(crc_reg ^ (polynomial * din));
-		}
-	}
+            /* Truncate 8th bit for crc_reg and mem_values */
+            crc_reg = (uint32_t)((crc_reg & 0x7F) << 1);
+            mem_values[index] = (uint8_t)((mem_values[index] & 0x7F) << 1);
+            crc_reg = (uint32_t)(crc_reg ^ (polynomial * din));
+        }
+    }
 
-	return (uint8_t)(crc_reg ^ 0xFF);
+    return (uint8_t)(crc_reg ^ 0xFF);
 }

@@ -1,5 +1,5 @@
 /**\mainpage
- * Copyright (C) 2016 - 2017 Bosch Sensortec GmbH
+ * Copyright (C) 2018 - 2019 Bosch Sensortec GmbH
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -39,16 +39,16 @@
  * No license is granted by implication or otherwise under any patent or
  * patent rights of the copyright holder.
  *
- * File		bme280_selftest.h
- * Date		21 Nov 2017
- * Version	1.0.0
+ * File     bme280_selftest.h
+ * Date     08 Mar 2019
+ * Version  3.3.6
  *
  */
 
- /*!
+/*!
  * @addtogroup bme280_selftest
  * @brief
- * @{*/
+ */
 
 #ifndef BME280_SELFTEST_H_
 #define BME280_SELFTEST_H_
@@ -57,12 +57,11 @@
 
 /*! CPP guard */
 #ifdef __cplusplus
-extern "C"
-{
+extern "C" {
 #endif
 
 /**\name API warning code */
-#define BME280_W_SELF_TEST_FAIL         INT8_C(2)
+#define BME280_W_SELF_TEST_FAIL INT8_C(2)
 
 /*!
  * @brief This API reads the stored CRC and then compare with calculated CRC
@@ -74,12 +73,10 @@ extern "C"
  */
 int8_t bme280_crc_selftest(const struct bme280_dev *dev);
 
-
 /*! CPP guard */
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* BME280_SELFTEST_H_ */
-
 /** @}*/

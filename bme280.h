@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016 - 2017 Bosch Sensortec GmbH
+ * Copyright (C) 2018 - 2019 Bosch Sensortec GmbH
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -39,17 +39,20 @@
  * No license is granted by implication or otherwise under any patent or
  * patent rights of the copyright holder.
  *
- * @file	bme280.h
- * @date	14 Feb 2018
- * @version	3.3.4
+ * @file    bme280.h
+ * @date    08 Mar 2019
+ * @version 3.3.6
  * @brief
  *
  */
+
 /*! @file bme280.h
-    @brief Sensor driver for BME280 sensor */
+ * @brief Sensor driver for BME280 sensor
+ */
+
 /*!
  * @defgroup BME280 SENSOR API
- * @{*/
+ */
 #ifndef BME280_H_
 #define BME280_H_
 
@@ -112,7 +115,7 @@ int8_t bme280_get_regs(uint8_t reg_addr, uint8_t *reg_data, uint16_t len, const 
  * desired settings. User can do OR operation of these macros for configuring
  * multiple settings.
  *
- * Macros		  |   Functionality
+ * Macros         |   Functionality
  * -----------------------|----------------------------------------------
  * BME280_OSR_PRESS_SEL    |   To set pressure oversampling.
  * BME280_OSR_TEMP_SEL     |   To set temperature oversampling.
@@ -151,8 +154,7 @@ int8_t bme280_get_sensor_settings(struct bme280_dev *dev);
  * @return Result of API execution status
  * @retval zero -> Success / +ve value -> Warning / -ve value -> Error
  */
-int8_t bme280_set_sensor_mode(uint8_t sensor_mode,
-				const struct bme280_dev *dev);
+int8_t bme280_set_sensor_mode(uint8_t sensor_mode, const struct bme280_dev *dev);
 
 /*!
  * @brief This API gets the power mode of the sensor.
@@ -230,8 +232,10 @@ void bme280_parse_sensor_data(const uint8_t *reg_data, struct bme280_uncomp_data
  * @return Result of API execution status.
  * @retval zero -> Success / -ve value -> Error
  */
-int8_t bme280_compensate_data(uint8_t sensor_comp, const struct bme280_uncomp_data *uncomp_data,
-				     struct bme280_data *comp_data, struct bme280_calib_data *calib_data);
+int8_t bme280_compensate_data(uint8_t sensor_comp,
+                              const struct bme280_uncomp_data *uncomp_data,
+                              struct bme280_data *comp_data,
+                              struct bme280_calib_data *calib_data);
 
 #ifdef __cplusplus
 }
