@@ -7,9 +7,9 @@ The sensor driver package includes bme280.c, bme280.h and bme280_defs.h files.
 ## Version
 File          | Version | Date
 --------------|---------|------------
-bme280.c      |  3.3.5  | 08 Nov 2018
-bme280.h      |  3.3.5  | 08 Nov 2018
-bme280_defs.h |  3.3.5  | 08 Nov 2018
+bme280.c      |  3.3.6  | 08 Mar 2019
+bme280.h      |  3.3.6  | 08 Mar 2019
+bme280_defs.h |  3.3.6  | 08 Mar 2019
 
 ## Integration details
 * Integrate bme280.h, bme280_defs.h and bme280.c file in to the project.
