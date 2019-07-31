@@ -4,7 +4,7 @@
 	tested: Raspberry Pi.
 	Use like: ./bme280 /dev/i2c-0
 */
-#include "bme280.h"
+
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -13,14 +13,17 @@
 #include <sys/ioctl.h>
 #include <sys/types.h>
 #include <fcntl.h>
+#include "bme280.h"
 
 int fd;
 
 int8_t user_i2c_read(uint8_t id, uint8_t reg_addr, uint8_t *data, uint16_t len)
 {
-	write(fd, &reg_addr, 1);
-	read(fd, data, len);
-	return 0;
+	if (write(fd, &reg_addr, sizeof(reg_addr)) < sizeof(reg_addr))
+		return BME280_E_COMM_FAIL;
+	if (read(fd, data, len) < len)
+		return BME280_E_COMM_FAIL;
+	return BME280_OK;
 }
 
 void user_delay_ms(uint32_t period)
@@ -31,12 +34,13 @@ void user_delay_ms(uint32_t period)
 int8_t user_i2c_write(uint8_t id, uint8_t reg_addr, uint8_t *data, uint16_t len)
 {
 	int8_t *buf;
-	buf = malloc(len +1);
+	buf = malloc(len + 1);
 	buf[0] = reg_addr;
 	memcpy(buf + 1, data, len);
-	write(fd, buf, len + 1);
+	if (write(fd, buf, len + 1) < len)
+		return BME280_E_COMM_FAIL;
 	free(buf);
-	return 0;
+	return BME280_OK;
 }
 
 void print_sensor_data(struct bme280_data *comp_data)
@@ -65,7 +69,7 @@ int8_t stream_sensor_data_forced_mode(struct bme280_dev *dev)
 	rslt = bme280_set_sensor_settings(settings_sel, dev);
 	if (rslt != BME280_OK)
 	{
-		fprintf(stderr, "Failed to set sensor settings.");
+		fprintf(stderr, "Failed to set sensor settings (code %+d).", rslt);
 		return rslt;
 	}
 
@@ -75,12 +79,18 @@ int8_t stream_sensor_data_forced_mode(struct bme280_dev *dev)
 	{
 		rslt = bme280_set_sensor_mode(BME280_FORCED_MODE, dev);
 		if (rslt != BME280_OK)
+		{
+			fprintf(stderr, "Failed to set sensor mode (code %+d).", rslt);
 			break;
+		}
 		/* Wait for the measurement to complete and print data @25Hz */
 		dev->delay_ms(40);
 		rslt = bme280_get_sensor_data(BME280_ALL, &comp_data, dev);
 		if (rslt != BME280_OK)
+		{
+			fprintf(stderr, "Failed to get sensor data (code %+d).", rslt);
 			break;
+		}
 		print_sensor_data(&comp_data);
 	}
 	return rslt;
@@ -126,13 +136,13 @@ int main(int argc, char* argv[])
 	rslt = bme280_init(&dev);
 	if (rslt != BME280_OK)
 	{
-		fprintf(stderr, "Failed to initialize the device.\n");
+		fprintf(stderr, "Failed to initialize the device (code %+d).\n", rslt);
 		exit(1);
 	}
 	rslt = stream_sensor_data_forced_mode(&dev);
 	if (rslt != BME280_OK)
 	{
-		fprintf(stderr, "Failed to stream sensor data.\n");
+		fprintf(stderr, "Failed to stream sensor data (code %+d).\n", rslt);
 		exit(1);
 	}
 	return 0;
