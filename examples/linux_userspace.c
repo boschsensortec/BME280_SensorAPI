@@ -66,11 +66,16 @@ int8_t stream_sensor_data_forced_mode(struct bme280_dev *dev)
 
   printf("Temperature, Pressure, Humidity\r\n");
   /* Continuously stream sensor data */
-  while (1) {
+  while (1)
+  {
     rslt = bme280_set_sensor_mode(BME280_FORCED_MODE, dev);
+    if (rslt != BME280_OK)
+      break;
     /* Wait for the measurement to complete and print data @25Hz */
     dev->delay_ms(40);
     rslt = bme280_get_sensor_data(BME280_ALL, &comp_data, dev);
+    if (rslt != BME280_OK)
+      break;
     print_sensor_data(&comp_data);
   }
   return rslt;
@@ -81,20 +86,47 @@ int main(int argc, char* argv[])
   struct bme280_dev dev;
   int8_t rslt = BME280_OK;
 
-  if ((fd = open(argv[1], O_RDWR)) < 0) {
-    printf("Failed to open the i2c bus %s", argv[1]);
+  if (argc < 2)
+  {
+    printf("Missing argument for I2C device.\n");
     exit(1);
   }
-  if (ioctl(fd, I2C_SLAVE, 0x76) < 0) {
-    printf("Failed to acquire bus access and/or talk to slave.\n");
-    exit(1);
-  }
-  dev.dev_id = BME280_I2C_ADDR_PRIM;
+  
+  // make sure to select BME280_I2C_ADDR_PRIM
+  // or BME280_I2C_ADDR_SEC as needed
+  dev.dev_id =
+#if 1
+    BME280_I2C_ADDR_PRIM
+#else
+    BME280_I2C_ADDR_SEC
+#endif
+    ;
+
   dev.intf = BME280_I2C_INTF;
   dev.read = user_i2c_read;
   dev.write = user_i2c_write;
   dev.delay_ms = user_delay_ms;
 
+  if ((fd = open(argv[1], O_RDWR)) < 0) {
+    printf("Failed to open the i2c bus %s\n", argv[1]);
+    exit(1);
+  }
+  if (ioctl(fd, I2C_SLAVE, dev.dev_id) < 0) {
+    printf("Failed to acquire bus access and/or talk to slave.\n");
+    exit(1);
+  }
+  
   rslt = bme280_init(&dev);
-  stream_sensor_data_forced_mode(&dev);
+  if (rslt != BME280_OK)
+  {
+    printf("Failed to initialize the device.\n");
+    exit(1);
+  }
+  rslt = stream_sensor_data_forced_mode(&dev);
+  if (rslt != BME280_OK)
+  {
+    printf("Failed to stream sensor data.\n");
+    exit(1);
+  }
+  return 0;
 }
