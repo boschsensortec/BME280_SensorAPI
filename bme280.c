@@ -361,6 +361,7 @@ int8_t bme280_init(struct bme280_dev *dev)
     /* chip id read try count */
     uint8_t try_count = 5;
     uint8_t chip_id = 0;
+    uint8_t stat_reg = 0;
 
     /* Check for null pointer in the device structure*/
     rslt = null_ptr_check(dev);
@@ -382,6 +383,11 @@ int8_t bme280_init(struct bme280_dev *dev)
                 rslt = bme280_soft_reset(dev);
                 if (rslt == BME280_OK)
                 {
+                    /* Wait for data to be copied from NVM to registers */
+                    while (bme280_get_regs(BME280_STAT_ADDR, &stat_reg, 1, dev)
+                        != BME280_OK || (stat_reg & 1) != 0)
+                      dev->delay_ms(10);
+
                     /* Read the calibration data */
                     rslt = get_calib_data(dev);
                 }

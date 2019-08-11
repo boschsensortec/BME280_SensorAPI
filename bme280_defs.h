@@ -135,6 +135,7 @@
 #define BME280_HUMIDITY_CALIB_DATA_ADDR   UINT8_C(0xE1)
 #define BME280_PWR_CTRL_ADDR              UINT8_C(0xF4)
 #define BME280_CTRL_HUM_ADDR              UINT8_C(0xF2)
+#define BME280_STAT_ADDR                  UINT8_C(0xF3)
 #define BME280_CTRL_MEAS_ADDR             UINT8_C(0xF4)
 #define BME280_CONFIG_ADDR                UINT8_C(0xF5)
 #define BME280_DATA_ADDR                  UINT8_C(0xF7)
