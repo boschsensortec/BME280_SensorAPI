@@ -40,8 +40,8 @@
  * patent rights of the copyright holder.
  *
  * @file    bme280.h
- * @date    08 Mar 2019
- * @version 3.3.6
+ * @date    26 Aug 2019
+ * @version 3.3.7
  * @brief
  *
  */

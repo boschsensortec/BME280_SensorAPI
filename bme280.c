@@ -40,8 +40,8 @@
  * patent rights of the copyright holder.
  *
  * File     bme280.c
- * Date     08 Mar 2019
- * Version  3.3.6
+ * Date     26 Aug 2019
+ * Version  3.3.7
  *
  */
 
@@ -632,9 +632,11 @@ int8_t bme280_soft_reset(const struct bme280_dev *dev)
 {
     int8_t rslt;
     uint8_t reg_addr = BME280_RESET_ADDR;
+    uint8_t status_reg = 0;
+    uint8_t try_run = 5;
 
     /* 0xB6 is the soft reset command */
-    uint8_t soft_rst_cmd = 0xB6;
+    uint8_t soft_rst_cmd = BME280_SOFT_RESET_COMMAND;
 
     /* Check for null pointer in the device structure*/
     rslt = null_ptr_check(dev);
@@ -645,8 +647,22 @@ int8_t bme280_soft_reset(const struct bme280_dev *dev)
         /* Write the soft reset command in the sensor */
         rslt = bme280_set_regs(&reg_addr, &soft_rst_cmd, 1, dev);
 
-        /* As per data sheet, startup time is 2 ms. */
-        dev->delay_ms(2);
+        if (rslt == BME280_OK)
+        {
+            /* If NVM not copied yet, Wait for NVM to copy */
+            do
+            {
+                /* As per data sheet - Table 1, startup time is 2 ms. */
+                dev->delay_ms(2);
+                rslt = bme280_get_regs(BME280_STATUS_REG_ADDR, &status_reg, 1, dev);
+            } while ((rslt == BME280_OK) && (try_run--) && (status_reg & BME280_STATUS_IM_UPDATE));
+
+            if (status_reg & BME280_STATUS_IM_UPDATE)
+            {
+                rslt = BME280_E_NVM_COPY_FAILED;
+            }
+
+        }
     }
 
     return rslt;

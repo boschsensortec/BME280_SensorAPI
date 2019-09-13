@@ -7,9 +7,9 @@ The sensor driver package includes bme280.c, bme280.h and bme280_defs.h files.
 ## Version
 File          | Version | Date
 --------------|---------|------------
-bme280.c      |  3.3.6  | 08 Mar 2019
-bme280.h      |  3.3.6  | 08 Mar 2019
-bme280_defs.h |  3.3.6  | 08 Mar 2019
+bme280.c      |  3.3.7  | 26 Aug 2019
+bme280.h      |  3.3.7  | 26 Aug 2019
+bme280_defs.h |  3.3.7  | 26 Aug 2019
 
 ## Integration details
 * Integrate bme280.h, bme280_defs.h and bme280.c file in to the project.
@@ -280,19 +280,16 @@ int8_t user_i2c_write(uint8_t dev_id, uint8_t reg_addr, uint8_t *reg_data, uint1
 
     /*
      * Data on the bus should be like
-     * |------------+----------------------|
-     * | I2C action | Data                 |
-     * |------------+----------------------|
-     * | Start      | -                    |
-     * | Write      | (reg_addr)           |
-     * | Write      | (reg_data[0])        |
-     * | Write      | (reg_addr + 1)       |
-     * | Write      | (reg_data[1])        |
-     * | Write      | (....)               |
-     * | Write      | (reg_addr + len - 1) |
-     * | Write      | (reg_data[len - 1])  |
-     * | Stop       | -                    |
-     * |------------+----------------------|
+     * |------------+---------------------|
+     * | I2C action | Data                |
+     * |------------+---------------------|
+     * | Start      | -                   |
+     * | Write      | (reg_addr)          |
+     * | Write      | (reg_data[0])       |
+     * | Write      | (....)              |
+     * | Write      | (reg_data[len - 1]) |
+     * | Stop       | -                   |
+     * |------------+---------------------|
      */
 
     return rslt;

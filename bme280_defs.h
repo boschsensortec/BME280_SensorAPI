@@ -40,8 +40,8 @@
  * patent rights of the copyright holder.
  *
  * @file    bme280_defs.h
- * @date    08 Mar 2019
- * @version 3.3.6
+ * @date    26 Aug 2019
+ * @version 3.3.7
  * @brief
  *
  */
@@ -148,6 +148,7 @@
 #define BME280_E_INVALID_LEN              INT8_C(-3)
 #define BME280_E_COMM_FAIL                INT8_C(-4)
 #define BME280_E_SLEEP_MODE_FAIL          INT8_C(-5)
+#define BME280_E_NVM_COPY_FAILED          INT8_C(-6)
 
 /**\name API warning codes */
 #define BME280_W_INVALID_OSR_MACRO        INT8_C(1)
@@ -221,7 +222,7 @@
 #define BME280_OVERSAMPLING_16X     UINT8_C(0x05)
 
 /**\name Standby duration selection macros */
-#define BME280_STANDBY_TIME_0_5_MS    (0x00)
+#define BME280_STANDBY_TIME_0_5_MS  (0x00)
 #define BME280_STANDBY_TIME_62_5_MS (0x01)
 #define BME280_STANDBY_TIME_125_MS  (0x02)
 #define BME280_STANDBY_TIME_250_MS  (0x03)
@@ -236,6 +237,10 @@
 #define BME280_FILTER_COEFF_4       (0x02)
 #define BME280_FILTER_COEFF_8       (0x03)
 #define BME280_FILTER_COEFF_16      (0x04)
+
+#define BME280_STATUS_REG_ADDR      (0xF3)
+#define BME280_SOFT_RESET_COMMAND   (0xB6)
+#define BME280_STATUS_IM_UPDATE     (0x01)
 
 /*!
  * @brief Interface selection Enums

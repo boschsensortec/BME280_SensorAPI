@@ -40,8 +40,8 @@
  * patent rights of the copyright holder.
  *
  * File     bme280_selftest.c
- * Date     08 Mar 2019
- * Version  3.3.6
+ * Date     26 Aug 2019
+ * Version  3.3.7
  *
  */
 
