@@ -731,7 +731,7 @@ void bme280_parse_sensor_data(const uint8_t *reg_data, struct bme280_uncomp_data
     data_xlsb = (uint32_t)reg_data[5] >> 4;
     uncomp_data->temperature = data_msb | data_lsb | data_xlsb;
 
-    /* Store the parsed register values for temperature data */
+    /* Store the parsed register values for humidity data */
     data_lsb = (uint32_t)reg_data[6] << 8;
     data_msb = (uint32_t)reg_data[7];
     uncomp_data->humidity = data_msb | data_lsb;
