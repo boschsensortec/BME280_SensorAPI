@@ -1,49 +1,40 @@
-/**\mainpage
- * Copyright (C) 2018 - 2019 Bosch Sensortec GmbH
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *
- * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- *
- * Redistributions in binary form must reproduce the above copyright
- * notice, this list of conditions and the following disclaimer in the
- * documentation and/or other materials provided with the distribution.
- *
- * Neither the name of the copyright holder nor the names of the
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND
- * CONTRIBUTORS "AS IS" AND ANY EXPRESS OR
- * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL COPYRIGHT HOLDER
- * OR CONTRIBUTORS BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
- * OR CONSEQUENTIAL DAMAGES(INCLUDING, BUT NOT LIMITED TO,
- * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
- * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
- * ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
- *
- * The information provided is believed to be accurate and reliable.
- * The copyright holder assumes no responsibility
- * for the consequences of use
- * of such information nor for any infringement of patents or
- * other rights of third parties which may result from its use.
- * No license is granted by implication or otherwise under any patent or
- * patent rights of the copyright holder.
- *
- * File     bme280.c
- * Date     26 Aug 2019
- * Version  3.3.7
- *
- */
+/**
+* Copyright (c) 2020 Bosch Sensortec GmbH. All rights reserved.
+*
+* BSD-3-Clause
+*
+* Redistribution and use in source and binary forms, with or without
+* modification, are permitted provided that the following conditions are met:
+*
+* 1. Redistributions of source code must retain the above copyright
+*    notice, this list of conditions and the following disclaimer.
+*
+* 2. Redistributions in binary form must reproduce the above copyright
+*    notice, this list of conditions and the following disclaimer in the
+*    documentation and/or other materials provided with the distribution.
+*
+* 3. Neither the name of the copyright holder nor the names of its
+*    contributors may be used to endorse or promote products derived from
+*    this software without specific prior written permission.
+*
+* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+* "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+* LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+* FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+* COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+* INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+* (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+* SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+* HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+* STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
+* IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+* POSSIBILITY OF SUCH DAMAGE.
+*
+* @file bme280.c
+* @date 10/01/2020
+* @version  3.4.1
+*
+*/
 
 /*! @file bme280.c
  * @brief Sensor driver for BME280 sensor
@@ -731,9 +722,9 @@ void bme280_parse_sensor_data(const uint8_t *reg_data, struct bme280_uncomp_data
     data_xlsb = (uint32_t)reg_data[5] >> 4;
     uncomp_data->temperature = data_msb | data_lsb | data_xlsb;
 
-    /* Store the parsed register values for temperature data */
-    data_lsb = (uint32_t)reg_data[6] << 8;
-    data_msb = (uint32_t)reg_data[7];
+    /* Store the parsed register values for humidity data */
+    data_msb = (uint32_t)reg_data[6] << 8;
+    data_lsb = (uint32_t)reg_data[7];
     uncomp_data->humidity = data_msb | data_lsb;
 }
 
@@ -779,6 +770,56 @@ int8_t bme280_compensate_data(uint8_t sensor_comp,
     }
 
     return rslt;
+}
+
+/*!
+ * @brief This API is used to calculate the maximum delay in milliseconds required for the
+ * temperature/pressure/humidity(which ever at enabled) measurement to complete.
+ */
+uint32_t bme280_cal_meas_delay(const struct bme280_settings *settings)
+{
+    uint32_t max_delay;
+    uint8_t temp_osr;
+    uint8_t pres_osr;
+    uint8_t hum_osr;
+
+    /*Array to map OSR config register value to actual OSR */
+    uint8_t osr_sett_to_act_osr[] = { 0, 1, 2, 4, 8, 16 };
+
+    /* Mapping osr settings to the actual osr values e.g. 0b101 -> osr X16  */
+    if (settings->osr_t <= 5)
+    {
+        temp_osr = osr_sett_to_act_osr[settings->osr_t];
+    }
+    else
+    {
+        temp_osr = 16;
+    }
+
+    if (settings->osr_p <= 5)
+    {
+        pres_osr = osr_sett_to_act_osr[settings->osr_p];
+    }
+    else
+    {
+        pres_osr = 16;
+    }
+
+    if (settings->osr_h <= 5)
+    {
+        hum_osr = osr_sett_to_act_osr[settings->osr_h];
+    }
+    else
+    {
+        hum_osr = 16;
+    }
+
+    max_delay =
+        (uint32_t)((BME280_MEAS_OFFSET + (BME280_MEAS_DUR * temp_osr) +
+                    ((BME280_MEAS_DUR * pres_osr) + BME280_PRES_HUM_MEAS_OFFSET) +
+                    ((BME280_MEAS_DUR * hum_osr) + BME280_PRES_HUM_MEAS_OFFSET)) / BME280_MEAS_SCALING_FACTOR);
+
+    return max_delay;
 }
 
 /*!
@@ -1143,10 +1184,10 @@ static int32_t compensate_temperature(const struct bme280_uncomp_data *uncomp_da
     int32_t temperature_min = -4000;
     int32_t temperature_max = 8500;
 
-    var1 = (int32_t)((uncomp_data->temperature / 8) - ((int32_t)calib_data->dig_T1 * 2));
-    var1 = (var1 * ((int32_t)calib_data->dig_T2)) / 2048;
-    var2 = (int32_t)((uncomp_data->temperature / 16) - ((int32_t)calib_data->dig_T1));
-    var2 = (((var2 * var2) / 4096) * ((int32_t)calib_data->dig_T3)) / 16384;
+    var1 = (int32_t)((uncomp_data->temperature / 8) - ((int32_t)calib_data->dig_t1 * 2));
+    var1 = (var1 * ((int32_t)calib_data->dig_t2)) / 2048;
+    var2 = (int32_t)((uncomp_data->temperature / 16) - ((int32_t)calib_data->dig_t1));
+    var2 = (((var2 * var2) / 4096) * ((int32_t)calib_data->dig_t3)) / 16384;
     calib_data->t_fine = var1 + var2;
     temperature = (calib_data->t_fine * 5 + 128) / 256;
     if (temperature < temperature_min)
@@ -1179,21 +1220,21 @@ static uint32_t compensate_pressure(const struct bme280_uncomp_data *uncomp_data
     uint32_t pressure_max = 11000000;
 
     var1 = ((int64_t)calib_data->t_fine) - 128000;
-    var2 = var1 * var1 * (int64_t)calib_data->dig_P6;
-    var2 = var2 + ((var1 * (int64_t)calib_data->dig_P5) * 131072);
-    var2 = var2 + (((int64_t)calib_data->dig_P4) * 34359738368);
-    var1 = ((var1 * var1 * (int64_t)calib_data->dig_P3) / 256) + ((var1 * ((int64_t)calib_data->dig_P2) * 4096));
+    var2 = var1 * var1 * (int64_t)calib_data->dig_p6;
+    var2 = var2 + ((var1 * (int64_t)calib_data->dig_p5) * 131072);
+    var2 = var2 + (((int64_t)calib_data->dig_p4) * 34359738368);
+    var1 = ((var1 * var1 * (int64_t)calib_data->dig_p3) / 256) + ((var1 * ((int64_t)calib_data->dig_p2) * 4096));
     var3 = ((int64_t)1) * 140737488355328;
-    var1 = (var3 + var1) * ((int64_t)calib_data->dig_P1) / 8589934592;
+    var1 = (var3 + var1) * ((int64_t)calib_data->dig_p1) / 8589934592;
 
     /* To avoid divide by zero exception */
     if (var1 != 0)
     {
         var4 = 1048576 - uncomp_data->pressure;
         var4 = (((var4 * INT64_C(2147483648)) - var2) * 3125) / var1;
-        var1 = (((int64_t)calib_data->dig_P9) * (var4 / 8192) * (var4 / 8192)) / 33554432;
-        var2 = (((int64_t)calib_data->dig_P8) * var4) / 524288;
-        var4 = ((var4 + var1 + var2) / 256) + (((int64_t)calib_data->dig_P7) * 16);
+        var1 = (((int64_t)calib_data->dig_p9) * (var4 / 8192) * (var4 / 8192)) / 33554432;
+        var2 = (((int64_t)calib_data->dig_p8) * var4) / 524288;
+        var4 = ((var4 + var1 + var2) / 256) + (((int64_t)calib_data->dig_p7) * 16);
         pressure = (uint32_t)(((var4 / 2) * 100) / 128);
         if (pressure < pressure_min)
         {
@@ -1289,16 +1330,16 @@ static uint32_t compensate_humidity(const struct bme280_uncomp_data *uncomp_data
 
     var1 = calib_data->t_fine - ((int32_t)76800);
     var2 = (int32_t)(uncomp_data->humidity * 16384);
-    var3 = (int32_t)(((int32_t)calib_data->dig_H4) * 1048576);
-    var4 = ((int32_t)calib_data->dig_H5) * var1;
+    var3 = (int32_t)(((int32_t)calib_data->dig_h4) * 1048576);
+    var4 = ((int32_t)calib_data->dig_h5) * var1;
     var5 = (((var2 - var3) - var4) + (int32_t)16384) / 32768;
-    var2 = (var1 * ((int32_t)calib_data->dig_H6)) / 1024;
-    var3 = (var1 * ((int32_t)calib_data->dig_H3)) / 2048;
+    var2 = (var1 * ((int32_t)calib_data->dig_h6)) / 1024;
+    var3 = (var1 * ((int32_t)calib_data->dig_h3)) / 2048;
     var4 = ((var2 * (var3 + (int32_t)32768)) / 1024) + (int32_t)2097152;
-    var2 = ((var4 * ((int32_t)calib_data->dig_H2)) + 8192) / 16384;
+    var2 = ((var4 * ((int32_t)calib_data->dig_h2)) + 8192) / 16384;
     var3 = var5 * var2;
     var4 = ((var3 / 32768) * (var3 / 32768)) / 128;
-    var5 = var3 - ((var4 * ((int32_t)calib_data->dig_H1)) / 16);
+    var5 = var3 - ((var4 * ((int32_t)calib_data->dig_h1)) / 16);
     var5 = (var5 < 0 ? 0 : var5);
     var5 = (var5 > 419430400 ? 419430400 : var5);
     humidity = (uint32_t)(var5 / 4096);
@@ -1370,19 +1411,19 @@ static void parse_temp_press_calib_data(const uint8_t *reg_data, struct bme280_d
 {
     struct bme280_calib_data *calib_data = &dev->calib_data;
 
-    calib_data->dig_T1 = BME280_CONCAT_BYTES(reg_data[1], reg_data[0]);
-    calib_data->dig_T2 = (int16_t)BME280_CONCAT_BYTES(reg_data[3], reg_data[2]);
-    calib_data->dig_T3 = (int16_t)BME280_CONCAT_BYTES(reg_data[5], reg_data[4]);
-    calib_data->dig_P1 = BME280_CONCAT_BYTES(reg_data[7], reg_data[6]);
-    calib_data->dig_P2 = (int16_t)BME280_CONCAT_BYTES(reg_data[9], reg_data[8]);
-    calib_data->dig_P3 = (int16_t)BME280_CONCAT_BYTES(reg_data[11], reg_data[10]);
-    calib_data->dig_P4 = (int16_t)BME280_CONCAT_BYTES(reg_data[13], reg_data[12]);
-    calib_data->dig_P5 = (int16_t)BME280_CONCAT_BYTES(reg_data[15], reg_data[14]);
-    calib_data->dig_P6 = (int16_t)BME280_CONCAT_BYTES(reg_data[17], reg_data[16]);
-    calib_data->dig_P7 = (int16_t)BME280_CONCAT_BYTES(reg_data[19], reg_data[18]);
-    calib_data->dig_P8 = (int16_t)BME280_CONCAT_BYTES(reg_data[21], reg_data[20]);
-    calib_data->dig_P9 = (int16_t)BME280_CONCAT_BYTES(reg_data[23], reg_data[22]);
-    calib_data->dig_H1 = reg_data[25];
+    calib_data->dig_t1 = BME280_CONCAT_BYTES(reg_data[1], reg_data[0]);
+    calib_data->dig_t2 = (int16_t)BME280_CONCAT_BYTES(reg_data[3], reg_data[2]);
+    calib_data->dig_t3 = (int16_t)BME280_CONCAT_BYTES(reg_data[5], reg_data[4]);
+    calib_data->dig_p1 = BME280_CONCAT_BYTES(reg_data[7], reg_data[6]);
+    calib_data->dig_p2 = (int16_t)BME280_CONCAT_BYTES(reg_data[9], reg_data[8]);
+    calib_data->dig_p3 = (int16_t)BME280_CONCAT_BYTES(reg_data[11], reg_data[10]);
+    calib_data->dig_p4 = (int16_t)BME280_CONCAT_BYTES(reg_data[13], reg_data[12]);
+    calib_data->dig_p5 = (int16_t)BME280_CONCAT_BYTES(reg_data[15], reg_data[14]);
+    calib_data->dig_p6 = (int16_t)BME280_CONCAT_BYTES(reg_data[17], reg_data[16]);
+    calib_data->dig_p7 = (int16_t)BME280_CONCAT_BYTES(reg_data[19], reg_data[18]);
+    calib_data->dig_p8 = (int16_t)BME280_CONCAT_BYTES(reg_data[21], reg_data[20]);
+    calib_data->dig_p9 = (int16_t)BME280_CONCAT_BYTES(reg_data[23], reg_data[22]);
+    calib_data->dig_h1 = reg_data[25];
 }
 
 /*!
@@ -1392,20 +1433,20 @@ static void parse_temp_press_calib_data(const uint8_t *reg_data, struct bme280_d
 static void parse_humidity_calib_data(const uint8_t *reg_data, struct bme280_dev *dev)
 {
     struct bme280_calib_data *calib_data = &dev->calib_data;
-    int16_t dig_H4_lsb;
-    int16_t dig_H4_msb;
-    int16_t dig_H5_lsb;
-    int16_t dig_H5_msb;
+    int16_t dig_h4_lsb;
+    int16_t dig_h4_msb;
+    int16_t dig_h5_lsb;
+    int16_t dig_h5_msb;
 
-    calib_data->dig_H2 = (int16_t)BME280_CONCAT_BYTES(reg_data[1], reg_data[0]);
-    calib_data->dig_H3 = reg_data[2];
-    dig_H4_msb = (int16_t)(int8_t)reg_data[3] * 16;
-    dig_H4_lsb = (int16_t)(reg_data[4] & 0x0F);
-    calib_data->dig_H4 = dig_H4_msb | dig_H4_lsb;
-    dig_H5_msb = (int16_t)(int8_t)reg_data[5] * 16;
-    dig_H5_lsb = (int16_t)(reg_data[4] >> 4);
-    calib_data->dig_H5 = dig_H5_msb | dig_H5_lsb;
-    calib_data->dig_H6 = (int8_t)reg_data[6];
+    calib_data->dig_h2 = (int16_t)BME280_CONCAT_BYTES(reg_data[1], reg_data[0]);
+    calib_data->dig_h3 = reg_data[2];
+    dig_h4_msb = (int16_t)(int8_t)reg_data[3] * 16;
+    dig_h4_lsb = (int16_t)(reg_data[4] & 0x0F);
+    calib_data->dig_h4 = dig_h4_msb | dig_h4_lsb;
+    dig_h5_msb = (int16_t)(int8_t)reg_data[5] * 16;
+    dig_h5_lsb = (int16_t)(reg_data[4] >> 4);
+    calib_data->dig_h5 = dig_h5_msb | dig_h5_lsb;
+    calib_data->dig_h6 = (int8_t)reg_data[6];
 }
 
 /*!

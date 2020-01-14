@@ -7,9 +7,9 @@ The sensor driver package includes bme280.c, bme280.h and bme280_defs.h files.
 ## Version
 File          | Version | Date
 --------------|---------|------------
-bme280.c      |  3.3.7  | 26 Aug 2019
-bme280.h      |  3.3.7  | 26 Aug 2019
-bme280_defs.h |  3.3.7  | 26 Aug 2019
+bme280.c      |  3.4.1  | 10 Jan 2020
+bme280.h      |  3.4.1  | 10 Jan 2020
+bme280_defs.h |  3.4.1  | 10 Jan 2020
 
 ## Integration details
 * Integrate bme280.h, bme280_defs.h and bme280.c file in to the project.
@@ -103,6 +103,7 @@ int8_t stream_sensor_data_forced_mode(struct bme280_dev *dev)
 {
     int8_t rslt;
     uint8_t settings_sel;
+	uint32_t req_delay;
     struct bme280_data comp_data;
 
     /* Recommended mode of operation: Indoor navigation */
@@ -114,13 +115,17 @@ int8_t stream_sensor_data_forced_mode(struct bme280_dev *dev)
     settings_sel = BME280_OSR_PRESS_SEL | BME280_OSR_TEMP_SEL | BME280_OSR_HUM_SEL | BME280_FILTER_SEL;
 
     rslt = bme280_set_sensor_settings(settings_sel, dev);
+	
+	/*Calculate the minimum delay required between consecutive measurement based upon the sensor enabled
+     *  and the oversampling configuration. */
+    req_delay = bme280_cal_meas_delay(&dev->settings);
 
     printf("Temperature, Pressure, Humidity\r\n");
     /* Continuously stream sensor data */
     while (1) {
         rslt = bme280_set_sensor_mode(BME280_FORCED_MODE, dev);
         /* Wait for the measurement to complete and print data @25Hz */
-        dev->delay_ms(40);
+        dev->delay_ms(req_delay);
         rslt = bme280_get_sensor_data(BME280_ALL, &comp_data, dev);
         print_sensor_data(&comp_data);
     }
