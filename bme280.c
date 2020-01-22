@@ -1273,13 +1273,13 @@ static uint32_t compensate_pressure(const struct bme280_uncomp_data *uncomp_data
     uint32_t pressure_max = 110000;
 
     var1 = (((int32_t)calib_data->t_fine) / 2) - (int32_t)64000;
-    var2 = (((var1 / 4) * (var1 / 4)) / 2048) * ((int32_t)calib_data->dig_P6);
-    var2 = var2 + ((var1 * ((int32_t)calib_data->dig_P5)) * 2);
-    var2 = (var2 / 4) + (((int32_t)calib_data->dig_P4) * 65536);
-    var3 = (calib_data->dig_P3 * (((var1 / 4) * (var1 / 4)) / 8192)) / 8;
-    var4 = (((int32_t)calib_data->dig_P2) * var1) / 2;
+    var2 = (((var1 / 4) * (var1 / 4)) / 2048) * ((int32_t)calib_data->dig_p6);
+    var2 = var2 + ((var1 * ((int32_t)calib_data->dig_p5)) * 2);
+    var2 = (var2 / 4) + (((int32_t)calib_data->dig_p4) * 65536);
+    var3 = (calib_data->dig_p3 * (((var1 / 4) * (var1 / 4)) / 8192)) / 8;
+    var4 = (((int32_t)calib_data->dig_p2) * var1) / 2;
     var1 = (var3 + var4) / 262144;
-    var1 = (((32768 + var1)) * ((int32_t)calib_data->dig_P1)) / 32768;
+    var1 = (((32768 + var1)) * ((int32_t)calib_data->dig_p1)) / 32768;
 
     /* avoid exception caused by division by zero */
     if (var1)
@@ -1294,9 +1294,9 @@ static uint32_t compensate_pressure(const struct bme280_uncomp_data *uncomp_data
         {
             pressure = (pressure / (uint32_t)var1) * 2;
         }
-        var1 = (((int32_t)calib_data->dig_P9) * ((int32_t)(((pressure / 8) * (pressure / 8)) / 8192))) / 4096;
-        var2 = (((int32_t)(pressure / 4)) * ((int32_t)calib_data->dig_P8)) / 8192;
-        pressure = (uint32_t)((int32_t)pressure + ((var1 + var2 + calib_data->dig_P7) / 16));
+        var1 = (((int32_t)calib_data->dig_p9) * ((int32_t)(((pressure / 8) * (pressure / 8)) / 8192))) / 4096;
+        var2 = (((int32_t)(pressure / 4)) * ((int32_t)calib_data->dig_p8)) / 8192;
+        pressure = (uint32_t)((int32_t)pressure + ((var1 + var2 + calib_data->dig_p7) / 16));
         if (pressure < pressure_min)
         {
             pressure = pressure_min;
