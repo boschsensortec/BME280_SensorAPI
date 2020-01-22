@@ -31,8 +31,8 @@
 * POSSIBILITY OF SUCH DAMAGE.
 *
 * @file bme280.c
-* @date 10/01/2020
-* @version  3.4.1
+* @date 21/01/2020
+* @version  3.4.2
 *
 */
 
@@ -1067,10 +1067,10 @@ static double compensate_temperature(const struct bme280_uncomp_data *uncomp_dat
     double temperature_min = -40;
     double temperature_max = 85;
 
-    var1 = ((double)uncomp_data->temperature) / 16384.0 - ((double)calib_data->dig_T1) / 1024.0;
-    var1 = var1 * ((double)calib_data->dig_T2);
-    var2 = (((double)uncomp_data->temperature) / 131072.0 - ((double)calib_data->dig_T1) / 8192.0);
-    var2 = (var2 * var2) * ((double)calib_data->dig_T3);
+    var1 = ((double)uncomp_data->temperature) / 16384.0 - ((double)calib_data->dig_t1) / 1024.0;
+    var1 = var1 * ((double)calib_data->dig_t2);
+    var2 = (((double)uncomp_data->temperature) / 131072.0 - ((double)calib_data->dig_t1) / 8192.0);
+    var2 = (var2 * var2) * ((double)calib_data->dig_t3);
     calib_data->t_fine = (int32_t)(var1 + var2);
     temperature = (var1 + var2) / 5120.0;
     if (temperature < temperature_min)
@@ -1100,21 +1100,21 @@ static double compensate_pressure(const struct bme280_uncomp_data *uncomp_data,
     double pressure_max = 110000.0;
 
     var1 = ((double)calib_data->t_fine / 2.0) - 64000.0;
-    var2 = var1 * var1 * ((double)calib_data->dig_P6) / 32768.0;
-    var2 = var2 + var1 * ((double)calib_data->dig_P5) * 2.0;
-    var2 = (var2 / 4.0) + (((double)calib_data->dig_P4) * 65536.0);
-    var3 = ((double)calib_data->dig_P3) * var1 * var1 / 524288.0;
-    var1 = (var3 + ((double)calib_data->dig_P2) * var1) / 524288.0;
-    var1 = (1.0 + var1 / 32768.0) * ((double)calib_data->dig_P1);
+    var2 = var1 * var1 * ((double)calib_data->dig_p6) / 32768.0;
+    var2 = var2 + var1 * ((double)calib_data->dig_p5) * 2.0;
+    var2 = (var2 / 4.0) + (((double)calib_data->dig_p4) * 65536.0);
+    var3 = ((double)calib_data->dig_p3) * var1 * var1 / 524288.0;
+    var1 = (var3 + ((double)calib_data->dig_p2) * var1) / 524288.0;
+    var1 = (1.0 + var1 / 32768.0) * ((double)calib_data->dig_p1);
 
     /* avoid exception caused by division by zero */
-    if (var1)
+    if (var1 > (0.0))
     {
         pressure = 1048576.0 - (double) uncomp_data->pressure;
         pressure = (pressure - (var2 / 4096.0)) * 6250.0 / var1;
-        var1 = ((double)calib_data->dig_P9) * pressure * pressure / 2147483648.0;
-        var2 = pressure * ((double)calib_data->dig_P8) / 32768.0;
-        pressure = pressure + (var1 + var2 + ((double)calib_data->dig_P7)) / 16.0;
+        var1 = ((double)calib_data->dig_p9) * pressure * pressure / 2147483648.0;
+        var2 = pressure * ((double)calib_data->dig_p8) / 32768.0;
+        pressure = pressure + (var1 + var2 + ((double)calib_data->dig_p7)) / 16.0;
         if (pressure < pressure_min)
         {
             pressure = pressure_min;
@@ -1150,13 +1150,14 @@ static double compensate_humidity(const struct bme280_uncomp_data *uncomp_data,
     double var6;
 
     var1 = ((double)calib_data->t_fine) - 76800.0;
-    var2 = (((double)calib_data->dig_H4) * 64.0 + (((double)calib_data->dig_H5) / 16384.0) * var1);
+    var2 = (((double)calib_data->dig_h4) * 64.0 + (((double)calib_data->dig_h5) / 16384.0) * var1);
     var3 = uncomp_data->humidity - var2;
-    var4 = ((double)calib_data->dig_H2) / 65536.0;
-    var5 = (1.0 + (((double)calib_data->dig_H3) / 67108864.0) * var1);
-    var6 = 1.0 + (((double)calib_data->dig_H6) / 67108864.0) * var1 * var5;
+    var4 = ((double)calib_data->dig_h2) / 65536.0;
+    var5 = (1.0 + (((double)calib_data->dig_h3) / 67108864.0) * var1);
+    var6 = 1.0 + (((double)calib_data->dig_h6) / 67108864.0) * var1 * var5;
     var6 = var3 * var4 * (var5 * var6);
-    humidity = var6 * (1.0 - ((double)calib_data->dig_H1) * var6 / 524288.0);
+    humidity = var6 * (1.0 - ((double)calib_data->dig_h1) * var6 / 524288.0);
+
     if (humidity > humidity_max)
     {
         humidity = humidity_max;
@@ -1190,6 +1191,7 @@ static int32_t compensate_temperature(const struct bme280_uncomp_data *uncomp_da
     var2 = (((var2 * var2) / 4096) * ((int32_t)calib_data->dig_t3)) / 16384;
     calib_data->t_fine = var1 + var2;
     temperature = (calib_data->t_fine * 5 + 128) / 256;
+
     if (temperature < temperature_min)
     {
         temperature = temperature_min;

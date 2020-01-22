@@ -31,8 +31,8 @@
 * POSSIBILITY OF SUCH DAMAGE.
 *
 * @file bme280.h
-* @date 10/01/2020
-* @version  3.4.1
+* @date 21/01/2020
+* @version  3.4.2
 *
 */
 
