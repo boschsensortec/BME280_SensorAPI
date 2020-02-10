@@ -30,9 +30,9 @@
 * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 * POSSIBILITY OF SUCH DAMAGE.
 *
-* @file bme280.h
-* @date 21/01/2020
-* @version  3.4.2
+* @file	bme280.h
+* @date	2020-01-24
+* @version	v3.4.3
 *
 */
 

@@ -30,9 +30,9 @@
 * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 * POSSIBILITY OF SUCH DAMAGE.
 *
-* @file bme280_defs.h
-* @date 21/01/2020
-* @version  3.4.2
+* @file	bme280_defs.h
+* @date	2020-01-24
+* @version	v3.4.3
 *
 */
 
@@ -93,14 +93,11 @@
 
 /********************************************************/
 
-#ifndef BME280_FLOAT_ENABLE
-
-/* #define BME280_FLOAT_ENABLE */
+#ifndef BME280_64BIT_ENABLE /* Check if 64-bit integer (using BME280_64BIT_ENABLE) is enabled */
+#ifndef BME280_32BIT_ENABLE /* Check if 32-bit integer (using BME280_32BIT_ENABLE) is enabled */
+#ifndef BME280_FLOAT_ENABLE /* If any of the integer data types not enabled then enable BME280_FLOAT_ENABLE */
+#define BME280_FLOAT_ENABLE
 #endif
-
-#ifndef BME280_FLOAT_ENABLE
-#ifndef BME280_64BIT_ENABLE
-#define BME280_64BIT_ENABLE
 #endif
 #endif
 

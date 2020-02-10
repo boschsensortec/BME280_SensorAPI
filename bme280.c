@@ -30,9 +30,9 @@
 * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 * POSSIBILITY OF SUCH DAMAGE.
 *
-* @file bme280.c
-* @date 21/01/2020
-* @version  3.4.2
+* @file	bme280.c
+* @date	2020-01-24
+* @version	v3.4.3
 *
 */
 
@@ -1203,7 +1203,7 @@ static int32_t compensate_temperature(const struct bme280_uncomp_data *uncomp_da
 
     return temperature;
 }
-#ifdef BME280_64BIT_ENABLE
+#ifndef BME280_32BIT_ENABLE /* 64 bit compensation for pressure data */
 
 /*!
  * @brief This internal API is used to compensate the raw pressure data and
@@ -1254,7 +1254,7 @@ static uint32_t compensate_pressure(const struct bme280_uncomp_data *uncomp_data
 
     return pressure;
 }
-#else
+#else /* 32 bit compensation for pressure data */
 
 /*!
  * @brief This internal API is used to compensate the raw pressure data and
