@@ -729,6 +729,49 @@ void bme280_parse_sensor_data(const uint8_t *reg_data, struct bme280_uncomp_data
 }
 
 /*!
+ *  @brief This API is used to parse the pressure and temperature
+ *  calibration data and store it in the bme280_calib_data structure instance.
+ */
+void bme280_parse_temp_press_calib_data(const uint8_t *reg_data, struct bme280_calib_data *calib_data)
+{
+    calib_data->dig_t1 = BME280_CONCAT_BYTES(reg_data[1], reg_data[0]);
+    calib_data->dig_t2 = (int16_t)BME280_CONCAT_BYTES(reg_data[3], reg_data[2]);
+    calib_data->dig_t3 = (int16_t)BME280_CONCAT_BYTES(reg_data[5], reg_data[4]);
+    calib_data->dig_p1 = BME280_CONCAT_BYTES(reg_data[7], reg_data[6]);
+    calib_data->dig_p2 = (int16_t)BME280_CONCAT_BYTES(reg_data[9], reg_data[8]);
+    calib_data->dig_p3 = (int16_t)BME280_CONCAT_BYTES(reg_data[11], reg_data[10]);
+    calib_data->dig_p4 = (int16_t)BME280_CONCAT_BYTES(reg_data[13], reg_data[12]);
+    calib_data->dig_p5 = (int16_t)BME280_CONCAT_BYTES(reg_data[15], reg_data[14]);
+    calib_data->dig_p6 = (int16_t)BME280_CONCAT_BYTES(reg_data[17], reg_data[16]);
+    calib_data->dig_p7 = (int16_t)BME280_CONCAT_BYTES(reg_data[19], reg_data[18]);
+    calib_data->dig_p8 = (int16_t)BME280_CONCAT_BYTES(reg_data[21], reg_data[20]);
+    calib_data->dig_p9 = (int16_t)BME280_CONCAT_BYTES(reg_data[23], reg_data[22]);
+    calib_data->dig_h1 = reg_data[25];
+}
+
+/*!
+ *  @brief This API is used to parse the humidity
+ *  calibration data and store it in the bme280_calib_data structure instance.
+ */
+void bme280_parse_humidity_calib_data(const uint8_t *reg_data, struct bme280_calib_data *calib_data)
+{
+    int16_t dig_h4_lsb;
+    int16_t dig_h4_msb;
+    int16_t dig_h5_lsb;
+    int16_t dig_h5_msb;
+
+    calib_data->dig_h2 = (int16_t)BME280_CONCAT_BYTES(reg_data[1], reg_data[0]);
+    calib_data->dig_h3 = reg_data[2];
+    dig_h4_msb = (int16_t)(int8_t)reg_data[3] * 16;
+    dig_h4_lsb = (int16_t)(reg_data[4] & 0x0F);
+    calib_data->dig_h4 = dig_h4_msb | dig_h4_lsb;
+    dig_h5_msb = (int16_t)(int8_t)reg_data[5] * 16;
+    dig_h5_lsb = (int16_t)(reg_data[4] >> 4);
+    calib_data->dig_h5 = dig_h5_msb | dig_h5_lsb;
+    calib_data->dig_h6 = (int8_t)reg_data[6];
+}
+
+/*!
  * @brief This API is used to compensate the pressure and/or
  * temperature and/or humidity data according to the component selected
  * by the user.
@@ -1403,41 +1446,6 @@ static void interleave_reg_addr(const uint8_t *reg_addr, uint8_t *temp_buff, con
         temp_buff[(index * 2) - 1] = reg_addr[index];
         temp_buff[index * 2] = reg_data[index];
     }
-}
-
-void bme280_parse_temp_press_calib_data(const uint8_t *reg_data, struct bme280_calib_data *calib_data)
-{
-    calib_data->dig_t1 = BME280_CONCAT_BYTES(reg_data[1], reg_data[0]);
-    calib_data->dig_t2 = (int16_t)BME280_CONCAT_BYTES(reg_data[3], reg_data[2]);
-    calib_data->dig_t3 = (int16_t)BME280_CONCAT_BYTES(reg_data[5], reg_data[4]);
-    calib_data->dig_p1 = BME280_CONCAT_BYTES(reg_data[7], reg_data[6]);
-    calib_data->dig_p2 = (int16_t)BME280_CONCAT_BYTES(reg_data[9], reg_data[8]);
-    calib_data->dig_p3 = (int16_t)BME280_CONCAT_BYTES(reg_data[11], reg_data[10]);
-    calib_data->dig_p4 = (int16_t)BME280_CONCAT_BYTES(reg_data[13], reg_data[12]);
-    calib_data->dig_p5 = (int16_t)BME280_CONCAT_BYTES(reg_data[15], reg_data[14]);
-    calib_data->dig_p6 = (int16_t)BME280_CONCAT_BYTES(reg_data[17], reg_data[16]);
-    calib_data->dig_p7 = (int16_t)BME280_CONCAT_BYTES(reg_data[19], reg_data[18]);
-    calib_data->dig_p8 = (int16_t)BME280_CONCAT_BYTES(reg_data[21], reg_data[20]);
-    calib_data->dig_p9 = (int16_t)BME280_CONCAT_BYTES(reg_data[23], reg_data[22]);
-    calib_data->dig_h1 = reg_data[25];
-}
-
-void bme280_parse_humidity_calib_data(const uint8_t *reg_data, struct bme280_calib_data *calib_data)
-{
-    int16_t dig_h4_lsb;
-    int16_t dig_h4_msb;
-    int16_t dig_h5_lsb;
-    int16_t dig_h5_msb;
-
-    calib_data->dig_h2 = (int16_t)BME280_CONCAT_BYTES(reg_data[1], reg_data[0]);
-    calib_data->dig_h3 = reg_data[2];
-    dig_h4_msb = (int16_t)(int8_t)reg_data[3] * 16;
-    dig_h4_lsb = (int16_t)(reg_data[4] & 0x0F);
-    calib_data->dig_h4 = dig_h4_msb | dig_h4_lsb;
-    dig_h5_msb = (int16_t)(int8_t)reg_data[5] * 16;
-    dig_h5_lsb = (int16_t)(reg_data[4] >> 4);
-    calib_data->dig_h5 = dig_h5_msb | dig_h5_lsb;
-    calib_data->dig_h6 = (int8_t)reg_data[6];
 }
 
 /*!
