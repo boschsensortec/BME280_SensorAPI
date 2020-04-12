@@ -206,6 +206,10 @@ int8_t bme280_get_sensor_data(uint8_t sensor_comp, struct bme280_data *comp_data
  */
 void bme280_parse_sensor_data(const uint8_t *reg_data, struct bme280_uncomp_data *uncomp_data);
 
+void bme280_parse_temp_press_calib_data(const uint8_t *reg_data, struct bme280_calib_data *calib_data);
+
+void bme280_parse_humidity_calib_data(const uint8_t *reg_data, struct bme280_calib_data *calib_data);
+
 /*!
  * @brief This API is used to compensate the pressure and/or
  * temperature and/or humidity data according to the component selected by the

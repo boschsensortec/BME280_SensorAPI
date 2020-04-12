@@ -1405,14 +1405,8 @@ static void interleave_reg_addr(const uint8_t *reg_addr, uint8_t *temp_buff, con
     }
 }
 
-/*!
- *  @brief This internal API is used to parse the temperature and
- *  pressure calibration data and store it in device structure.
- */
-static void parse_temp_press_calib_data(const uint8_t *reg_data, struct bme280_dev *dev)
+void bme280_parse_temp_press_calib_data(const uint8_t *reg_data, struct bme280_calib_data *calib_data)
 {
-    struct bme280_calib_data *calib_data = &dev->calib_data;
-
     calib_data->dig_t1 = BME280_CONCAT_BYTES(reg_data[1], reg_data[0]);
     calib_data->dig_t2 = (int16_t)BME280_CONCAT_BYTES(reg_data[3], reg_data[2]);
     calib_data->dig_t3 = (int16_t)BME280_CONCAT_BYTES(reg_data[5], reg_data[4]);
@@ -1428,13 +1422,8 @@ static void parse_temp_press_calib_data(const uint8_t *reg_data, struct bme280_d
     calib_data->dig_h1 = reg_data[25];
 }
 
-/*!
- *  @brief This internal API is used to parse the humidity calibration data
- *  and store it in device structure.
- */
-static void parse_humidity_calib_data(const uint8_t *reg_data, struct bme280_dev *dev)
+void bme280_parse_humidity_calib_data(const uint8_t *reg_data, struct bme280_calib_data *calib_data)
 {
-    struct bme280_calib_data *calib_data = &dev->calib_data;
     int16_t dig_h4_lsb;
     int16_t dig_h4_msb;
     int16_t dig_h5_lsb;
@@ -1449,6 +1438,26 @@ static void parse_humidity_calib_data(const uint8_t *reg_data, struct bme280_dev
     dig_h5_lsb = (int16_t)(reg_data[4] >> 4);
     calib_data->dig_h5 = dig_h5_msb | dig_h5_lsb;
     calib_data->dig_h6 = (int8_t)reg_data[6];
+}
+
+/*!
+ *  @brief This internal API is used to parse the temperature and
+ *  pressure calibration data and store it in device structure.
+ */
+static void parse_temp_press_calib_data(const uint8_t *reg_data, struct bme280_dev *dev)
+{
+    struct bme280_calib_data *calib_data = &dev->calib_data;
+    bme280_parse_temp_press_calib_data(reg_data, calib_data);
+}
+
+/*!
+ *  @brief This internal API is used to parse the humidity calibration data
+ *  and store it in device structure.
+ */
+static void parse_humidity_calib_data(const uint8_t *reg_data, struct bme280_dev *dev)
+{
+    struct bme280_calib_data *calib_data = &dev->calib_data;
+    bme280_parse_humidity_calib_data(reg_data, calib_data);
 }
 
 /*!
