@@ -15,10 +15,8 @@
  * \include linux_userspace.c
  */
 
-#ifdef __KERNEL__
 #include <linux/i2c-dev.h>
 #include <sys/ioctl.h>
-#endif
 
 /******************************************************************************/
 /*!                         System header files                               */
@@ -143,13 +141,11 @@ int main(int argc, char* argv[])
         exit(1);
     }
 
-#ifdef __KERNEL__
     if (ioctl(fd, I2C_SLAVE, dev.dev_id) < 0)
     {
         fprintf(stderr, "Failed to acquire bus access and/or talk to slave.\n");
         exit(1);
     }
-#endif
 
     /* Initialize the bme280 */
     rslt = bme280_init(&dev);
