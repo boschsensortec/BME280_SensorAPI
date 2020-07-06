@@ -1,13 +1,18 @@
-/*
- * Copyright (C) 2020 Bosch Sensortec GmbH
+/**\
+ * Copyright (c) 2020 Bosch Sensortec GmbH. All rights reserved.
  *
- * The license is available at root folder
- *
+ * SPDX-License-Identifier: BSD-3-Clause
+ **/
+
+/**
+ * \ingroup bme280
+ * \defgroup bme280Examples Examples
+ * @brief Reference Examples
  */
 
 /*!
- * @ingroup bme280GroupExample
- * @defgroup bme280GroupExample linux_userspace
+ * @ingroup bme280Examples
+ * @defgroup bme280GroupExampleLU linux_userspace
  * @brief Linux userspace test code, simple and mose code directly from the doco.
  * compile like this: gcc linux_userspace.c ../bme280.c -I ../ -o bme280
  * tested: Raspberry Pi.
@@ -33,9 +38,18 @@
 /*!                         Own header files                                  */
 #include "bme280.h"
 
-/*****************************************************************************/
-/*!                         Global variables                                 */
-int fd;
+/******************************************************************************/
+/*!                               Structures                                  */
+
+/* Structure that contains identifier details used in example */
+struct identifier
+{
+    /* Variable to hold device address */
+    uint8_t dev_addr;
+
+    /* Variable that contains file descriptor */
+    int8_t fd;
+};
 
 /****************************************************************************/
 /*!                         Functions                                       */
@@ -43,11 +57,13 @@ int fd;
 /*!
  *  @brief Function that creates a mandatory delay required in some of the APIs.
  *
- *  @param[in] period  : The required wait time in microseconds.
+ * @param[in] period              : Delay in microseconds.
+ * @param[in, out] intf_ptr       : Void pointer that can enable the linking of descriptors
+ *                                  for interface related call backs
  *  @return void.
  *
  */
-void user_delay_ms(uint32_t period);
+void user_delay_us(uint32_t period, void *intf_ptr);
 
 /*!
  * @brief Function for print the temperature, humidity and pressure data.
@@ -68,10 +84,11 @@ void print_sensor_data(struct bme280_data *comp_data);
 /*!
  *  @brief Function for reading the sensor's registers through I2C bus.
  *
- *  @param[in] id       : Sensor I2C address.
- *  @param[in] reg_addr : Register address.
- *  @param[out] data    : Pointer to the data buffer to store the read data.
- *  @param[in] len      : No of bytes to read.
+ *  @param[in] reg_addr       : Register address.
+ *  @param[out] data          : Pointer to the data buffer to store the read data.
+ *  @param[in] len            : No of bytes to read.
+ *  @param[in, out] intf_ptr  : Void pointer that can enable the linking of descriptors
+ *                                  for interface related call backs.
  *
  *  @return Status of execution
  *
@@ -79,15 +96,16 @@ void print_sensor_data(struct bme280_data *comp_data);
  *  @retval > 0 -> Failure Info
  *
  */
-int8_t user_i2c_read(uint8_t id, uint8_t reg_addr, uint8_t *data, uint16_t len);
+int8_t user_i2c_read(uint8_t reg_addr, uint8_t *data, uint32_t len, void *intf_ptr);
 
 /*!
  *  @brief Function for writing the sensor's registers through I2C bus.
  *
- *  @param[in] id       : Sensor I2C address.
- *  @param[in] reg_addr : Register address.
- *  @param[in] data     : Pointer to the data buffer whose value is to be written.
- *  @param[in] len      : No of bytes to write.
+ *  @param[in] reg_addr       : Register address.
+ *  @param[in] data           : Pointer to the data buffer whose value is to be written.
+ *  @param[in] len            : No of bytes to write.
+ *  @param[in, out] intf_ptr  : Void pointer that can enable the linking of descriptors
+ *                                  for interface related call backs
  *
  *  @return Status of execution
  *
@@ -95,7 +113,7 @@ int8_t user_i2c_read(uint8_t id, uint8_t reg_addr, uint8_t *data, uint16_t len);
  *  @retval BME280_E_COMM_FAIL -> Communication failure.
  *
  */
-int8_t user_i2c_write(uint8_t id, uint8_t reg_addr, uint8_t *data, uint16_t len);
+int8_t user_i2c_write(uint8_t reg_addr, const uint8_t *data, uint32_t len, void *intf_ptr);
 
 /*!
  * @brief Function reads temperature, humidity and pressure data in forced mode.
@@ -119,6 +137,8 @@ int main(int argc, char* argv[])
 {
     struct bme280_dev dev;
 
+    struct identifier id;
+
     /* Variable to define the result */
     int8_t rslt = BME280_OK;
 
@@ -128,28 +148,31 @@ int main(int argc, char* argv[])
         exit(1);
     }
 
-    /* Make sure to select BME280_I2C_ADDR_PRIM or BME280_I2C_ADDR_SEC as needed */
-    dev.dev_id = BME280_I2C_ADDR_PRIM;
-
-    /* dev.dev_id = BME280_I2C_ADDR_SEC; */
-    dev.intf = BME280_I2C_INTF;
-    dev.read = user_i2c_read;
-    dev.write = user_i2c_write;
-    dev.delay_ms = user_delay_ms;
-
-    if ((fd = open(argv[1], O_RDWR)) < 0)
+    if ((id.fd = open(argv[1], O_RDWR)) < 0)
     {
         fprintf(stderr, "Failed to open the i2c bus %s\n", argv[1]);
         exit(1);
     }
 
 #ifdef __KERNEL__
-    if (ioctl(fd, I2C_SLAVE, dev.dev_id) < 0)
+    if (ioctl(id.fd, I2C_SLAVE, id.dev_addr) < 0)
     {
         fprintf(stderr, "Failed to acquire bus access and/or talk to slave.\n");
         exit(1);
     }
+
 #endif
+
+    /* Make sure to select BME280_I2C_ADDR_PRIM or BME280_I2C_ADDR_SEC as needed */
+    id.dev_addr = BME280_I2C_ADDR_PRIM;
+
+    dev.intf = BME280_I2C_INTF;
+    dev.read = user_i2c_read;
+    dev.write = user_i2c_write;
+    dev.delay_us = user_delay_us;
+
+    /* Update interface pointer with the structure that contains both device address and file descriptor */
+    dev.intf_ptr = &id;
 
     /* Initialize the bme280 */
     rslt = bme280_init(&dev);
@@ -172,10 +195,14 @@ int main(int argc, char* argv[])
 /*!
  * @brief This function reading the sensor's registers through I2C bus.
  */
-int8_t user_i2c_read(uint8_t id, uint8_t reg_addr, uint8_t *data, uint16_t len)
+int8_t user_i2c_read(uint8_t reg_addr, uint8_t *data, uint32_t len, void *intf_ptr)
 {
-    write(fd, &reg_addr, 1);
-    read(fd, data, len);
+    struct identifier id;
+
+    id = *((struct identifier *)intf_ptr);
+
+    write(id.fd, &reg_addr, 1);
+    read(id.fd, data, len);
 
     return 0;
 }
@@ -184,23 +211,25 @@ int8_t user_i2c_read(uint8_t id, uint8_t reg_addr, uint8_t *data, uint16_t len)
  * @brief This function provides the delay for required time (Microseconds) as per the input provided in some of the
  * APIs
  */
-void user_delay_ms(uint32_t period)
+void user_delay_us(uint32_t period, void *intf_ptr)
 {
-    /* Milliseconds convert to microseconds */
-    usleep(period * 1000);
+    usleep(period);
 }
 
 /*!
  * @brief This function for writing the sensor's registers through I2C bus.
  */
-int8_t user_i2c_write(uint8_t id, uint8_t reg_addr, uint8_t *data, uint16_t len)
+int8_t user_i2c_write(uint8_t reg_addr, const uint8_t *data, uint32_t len, void *intf_ptr)
 {
-    int8_t *buf;
+    uint8_t *buf;
+    struct identifier id;
+
+    id = *((struct identifier *)intf_ptr);
 
     buf = malloc(len + 1);
     buf[0] = reg_addr;
     memcpy(buf + 1, data, len);
-    if (write(fd, buf, len + 1) < len)
+    if (write(id.fd, buf, len + 1) < (uint16_t)len)
     {
         return BME280_E_COMM_FAIL;
     }
@@ -287,7 +316,7 @@ int8_t stream_sensor_data_forced_mode(struct bme280_dev *dev)
         }
 
         /* Wait for the measurement to complete and print data */
-        dev->delay_ms(req_delay);
+        dev->delay_us(req_delay, dev->intf_ptr);
         rslt = bme280_get_sensor_data(BME280_ALL, &comp_data, dev);
         if (rslt != BME280_OK)
         {
