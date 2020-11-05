@@ -850,7 +850,7 @@ int8_t bme280_compensate_data(uint8_t sensor_comp,
 }
 
 /*!
- * @brief This API is used to calculate the maximum delay in milliseconds required for the
+ * @brief This API is used to calculate the maximum delay in microseconds required for the
  * temperature/pressure/humidity(which ever at enabled) measurement to complete.
  */
 uint32_t bme280_cal_meas_delay(const struct bme280_settings *settings)
