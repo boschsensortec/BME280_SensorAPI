@@ -24,8 +24,8 @@ The sensor driver package includes bme280.c, bme280.h and bme280_defs.h files.
 SPI 3-wire is currently not supported in the API.
 ## Usage guide
 ### Initializing the sensor
-To initialize the sensor, user need to create a device structure. User can do this by 
-creating an instance of the structure bme280_dev. After creating the device strcuture, user 
+To initialize the sensor, user need to create a device structure. User can do this by
+creating an instance of the structure bme280_dev. After creating the device strcuture, user
 need to fill in the various parameters as shown below.
 
 #### Example for SPI 4-Wire
@@ -72,7 +72,7 @@ By default, 64 bit variant is used in the API. If the user wants 32 bit variant,
 macro BME280_64BIT_ENABLE in bme280_defs.h file.
 
 ### Sensor data units
-> The sensor data units depends on the following macros being enabled or not, 
+> The sensor data units depends on the following macros being enabled or not,
 > (in bme280_defs.h file or as compiler macros)
 >   * BME280_FLOAT_ENABLE
 >   * BME280_64BIT_ENABLE
@@ -112,7 +112,7 @@ int8_t stream_sensor_data_forced_mode(struct bme280_dev *dev)
     settings_sel = BME280_OSR_PRESS_SEL | BME280_OSR_TEMP_SEL | BME280_OSR_HUM_SEL | BME280_FILTER_SEL;
 
     rslt = bme280_set_sensor_settings(settings_sel, dev);
-	
+
 	/*Calculate the minimum delay required between consecutive measurement based upon the sensor enabled
      *  and the oversampling configuration. */
     req_delay = bme280_cal_meas_delay(&dev->settings);
@@ -219,7 +219,7 @@ int8_t user_spi_read(uint8_t reg_addr, uint8_t *reg_data, uint32_t len, void *in
     return rslt;
 }
 
-int8_t user_spi_write(uint8_t reg_addr, uint8_t *reg_data, uint32_t len, void *intf_ptr)
+int8_t user_spi_write(uint8_t reg_addr, const uint8_t *reg_data, uint32_t len, void *intf_ptr)
 {
     int8_t rslt = 0; /* Return 0 for Success, non-zero for failure */
 
@@ -272,7 +272,7 @@ int8_t user_i2c_read(uint8_t reg_addr, uint8_t *reg_data, uint32_t len, void *in
     return rslt;
 }
 
-int8_t user_i2c_write(uint8_t reg_addr, uint8_t *reg_data, uint32_t len, void *intf_ptr)
+int8_t user_i2c_write(uint8_t reg_addr, const uint8_t *reg_data, uint32_t len, void *intf_ptr)
 {
     int8_t rslt = 0; /* Return 0 for Success, non-zero for failure */
 
