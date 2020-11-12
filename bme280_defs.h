@@ -286,7 +286,7 @@ typedef BME280_INTF_RET_TYPE (*bme280_read_fptr_t)(uint8_t reg_addr, uint8_t *re
  * @retval Non zero value -> Fail.
  *
  */
-typedef BME280_INTF_RET_TYPE (*bme280_write_fptr_t)(uint8_t reg_addr, const uint8_t *reg_data, uint32_t len,
+typedef BME280_INTF_RET_TYPE (*bme280_write_fptr_t)(uint8_t reg_addr, uint8_t *reg_data, uint32_t len,
                                                     void *intf_ptr);
 
 /*!
