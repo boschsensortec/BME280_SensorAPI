@@ -40,7 +40,7 @@ dev.intf_ptr = &dev_addr;
 dev.intf = BME280_SPI_INTF;
 dev.read = user_spi_read;
 dev.write = user_spi_write;
-dev.delay_ms = user_delay_ms;
+dev.delay_us = user_delay_ms;
 
 rslt = bme280_init(&dev);
 ```
@@ -54,7 +54,7 @@ dev.intf_ptr = &dev_addr;
 dev.intf = BME280_I2C_INTF;
 dev.read = user_i2c_read;
 dev.write = user_i2c_write;
-dev.delay_ms = user_delay_ms;
+dev.delay_us = user_delay_ms;
 
 rslt = bme280_init(&dev);
 ```
@@ -122,7 +122,7 @@ int8_t stream_sensor_data_forced_mode(struct bme280_dev *dev)
     while (1) {
         rslt = bme280_set_sensor_mode(BME280_FORCED_MODE, dev);
         /* Wait for the measurement to complete and print data @25Hz */
-        dev->delay_ms(req_delay, dev->intf_ptr);
+        dev->delay_us(req_delay, dev->intf_ptr);
         rslt = bme280_get_sensor_data(BME280_ALL, &comp_data, dev);
         print_sensor_data(&comp_data);
     }
@@ -164,7 +164,7 @@ int8_t stream_sensor_data_normal_mode(struct bme280_dev *dev)
 	printf("Temperature, Pressure, Humidity\r\n");
 	while (1) {
 		/* Delay while the sensor completes a measurement */
-		dev->delay_ms(70, dev->intf_ptr);
+		dev->delay_us(70, dev->intf_ptr);
 		rslt = bme280_get_sensor_data(BME280_ALL, &comp_data, dev);
 		print_sensor_data(&comp_data);
 	}
