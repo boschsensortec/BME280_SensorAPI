@@ -20,10 +20,10 @@
  * \include linux_userspace.c
  */
 
-#ifdef __KERNEL__
+//#ifdef __KERNEL__
 #include <linux/i2c-dev.h>
 #include <sys/ioctl.h>
-#endif
+//#endif
 
 /******************************************************************************/
 /*!                         System header files                               */
@@ -153,18 +153,19 @@ int main(int argc, char* argv[])
         fprintf(stderr, "Failed to open the i2c bus %s\n", argv[1]);
         exit(1);
     }
-
-#ifdef __KERNEL__
+    
+    id.dev_addr = BME280_I2C_ADDR_PRIM;
+//#ifdef __KERNEL__
     if (ioctl(id.fd, I2C_SLAVE, id.dev_addr) < 0)
     {
         fprintf(stderr, "Failed to acquire bus access and/or talk to slave.\n");
         exit(1);
     }
 
-#endif
+//#endif
 
     /* Make sure to select BME280_I2C_ADDR_PRIM or BME280_I2C_ADDR_SEC as needed */
-    id.dev_addr = BME280_I2C_ADDR_PRIM;
+
 
     dev.intf = BME280_I2C_INTF;
     dev.read = user_i2c_read;
