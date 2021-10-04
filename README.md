@@ -151,7 +151,7 @@ int8_t stream_sensor_data_normal_mode(struct bme280_dev *dev)
 	dev->settings.osr_p = BME280_OVERSAMPLING_16X;
 	dev->settings.osr_t = BME280_OVERSAMPLING_2X;
 	dev->settings.filter = BME280_FILTER_COEFF_16;
-	dev->settings.standby_time = BME280_STANDBY_TIME_62_5_us;
+	dev->settings.standby_time = BME280_STANDBY_TIME_62_5_MS;
 
 	settings_sel = BME280_OSR_PRESS_SEL;
 	settings_sel |= BME280_OSR_TEMP_SEL;
