@@ -218,7 +218,7 @@
 #define BME280_MEAS_OFFSET                        UINT16_C(1250)
 #define BME280_MEAS_DUR                           UINT16_C(2300)
 #define BME280_PRES_HUM_MEAS_OFFSET               UINT16_C(575)
-#define BME280_MEAS_SCALING_FACTOR                UINT16_C(1000)
+#define BME280_MEAS_SCALING_FACTOR                UINT16_C(1)
 
 /**\name Standby duration selection macros */
 #define BME280_STANDBY_TIME_0_5_MS                (0x00)
