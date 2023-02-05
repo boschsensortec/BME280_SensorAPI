@@ -13,7 +13,7 @@
 /*!
  * @ingroup bme280Examples
  * @defgroup bme280GroupExampleLU linux_userspace
- * @brief Linux userspace test code, simple and mose code directly from the doco.
+ * @brief Linux userspace test code, simple and fast code directly from the docs.
  * compile like this: gcc linux_userspace.c ../bme280.c -I ../ -o bme280
  * tested: Raspberry Pi.
  * Use like: ./bme280 /dev/i2c-0
@@ -213,6 +213,7 @@ int8_t user_i2c_read(uint8_t reg_addr, uint8_t *data, uint32_t len, void *intf_p
  */
 void user_delay_us(uint32_t period, void *intf_ptr)
 {
+    (void)intf_ptr;   /* unused parameter, suppress warnings */
     usleep(period);
 }
 
@@ -300,8 +301,8 @@ int8_t stream_sensor_data_forced_mode(struct bme280_dev *dev)
 
     printf("Temperature, Pressure, Humidity\n");
 
-    /*Calculate the minimum delay required between consecutive measurement based upon the sensor enabled
-     *  and the oversampling configuration. */
+    /* Calculate the minimum delay in microseconds required between consecutive measurements
+     * based upon the sensor enabled and oversampling configuration. */
     req_delay = bme280_cal_meas_delay(&dev->settings);
 
     /* Continuously stream sensor data */

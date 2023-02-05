@@ -850,8 +850,8 @@ int8_t bme280_compensate_data(uint8_t sensor_comp,
 }
 
 /*!
- * @brief This API is used to calculate the maximum delay in milliseconds required for the
- * temperature/pressure/humidity(which ever at enabled) measurement to complete.
+ * @brief This API is used to calculate the maximum delay in microseconds required for the
+ * temperature/pressure/humidity (whichever are enabled) measurement to complete.
  */
 uint32_t bme280_cal_meas_delay(const struct bme280_settings *settings)
 {
@@ -892,9 +892,9 @@ uint32_t bme280_cal_meas_delay(const struct bme280_settings *settings)
     }
 
     max_delay =
-        (uint32_t)((BME280_MEAS_OFFSET + (BME280_MEAS_DUR * temp_osr) +
+        (uint32_t)(BME280_MEAS_OFFSET + (BME280_MEAS_DUR * temp_osr) +
                     ((BME280_MEAS_DUR * pres_osr) + BME280_PRES_HUM_MEAS_OFFSET) +
-                    ((BME280_MEAS_DUR * hum_osr) + BME280_PRES_HUM_MEAS_OFFSET)) / BME280_MEAS_SCALING_FACTOR);
+                    ((BME280_MEAS_DUR * hum_osr) + BME280_PRES_HUM_MEAS_OFFSET));
 
     return max_delay;
 }
