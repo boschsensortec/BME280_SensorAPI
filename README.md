@@ -298,4 +298,3 @@ int8_t user_i2c_write(uint8_t reg_addr, const uint8_t *reg_data, uint32_t len, v
     return rslt;
 }
 
-```

@@ -15,12 +15,15 @@
  * @defgroup bme280GroupExampleLU linux_userspace
  * @brief Linux userspace test code, simple and fast code directly from the docs.
  * compile like this: gcc linux_userspace.c ../bme280.c -I ../ -o bme280
- * tested: Raspberry Pi.
+ * tested: Beagle Bone Black, Raspberry Pi.
  * Use like: ./bme280 /dev/i2c-0
  * \include linux_userspace.c
  */
 
-#ifdef __KERNEL__
+/* For compiling not with Beagle Bone Black (tested) uncomment following line:
+#define USE_IOCTL
+
+#if define __KERNEL__ || define USE_IOCTL
 #include <linux/i2c-dev.h>
 #include <sys/ioctl.h>
 #endif
@@ -139,6 +142,9 @@ int main(int argc, char* argv[])
 
     struct identifier id;
 
+    /* Make sure to select BME280_I2C_ADDR_PRIM or BME280_I2C_ADDR_SEC as needed */
+    id.dev_addr = BME280_I2C_ADDR_PRIM;
+
     /* Variable to define the result */
     int8_t rslt = BME280_OK;
 
@@ -154,7 +160,7 @@ int main(int argc, char* argv[])
         exit(1);
     }
 
-#ifdef __KERNEL__
+#if define __KERNEL__ || define USE_IOCTL
     if (ioctl(id.fd, I2C_SLAVE, id.dev_addr) < 0)
     {
         fprintf(stderr, "Failed to acquire bus access and/or talk to slave.\n");
@@ -162,9 +168,6 @@ int main(int argc, char* argv[])
     }
 
 #endif
-
-    /* Make sure to select BME280_I2C_ADDR_PRIM or BME280_I2C_ADDR_SEC as needed */
-    id.dev_addr = BME280_I2C_ADDR_PRIM;
 
     dev.intf = BME280_I2C_INTF;
     dev.read = user_i2c_read;
@@ -201,10 +204,12 @@ int8_t user_i2c_read(uint8_t reg_addr, uint8_t *data, uint32_t len, void *intf_p
 
     id = *((struct identifier *)intf_ptr);
 
-    write(id.fd, &reg_addr, 1);
-    read(id.fd, data, len);
+    if (write(id.fd, &reg_addr, 1) != 1)
+        return BME280_E_COMM_FAIL;
+    if (read(id.fd, data, len) != (ssize_t)len)
+        return BME280_E_COMM_FAIL;
 
-    return 0;
+    return BME280_OK;
 }
 
 /*!
@@ -224,20 +229,24 @@ int8_t user_i2c_write(uint8_t reg_addr, const uint8_t *data, uint32_t len, void 
 {
     uint8_t *buf;
     struct identifier id;
+	int8_t ret = BME280_OK;
 
     id = *((struct identifier *)intf_ptr);
 
     buf = malloc(len + 1);
-    buf[0] = reg_addr;
-    memcpy(buf + 1, data, len);
-    if (write(id.fd, buf, len + 1) < (uint16_t)len)
-    {
-        return BME280_E_COMM_FAIL;
+    if (buf == NULL)    /* could not allocate enough memory */
+        return BME280_E_NULL_PTR;
+    while(0) {
+        buf[0] = reg_addr;
+        memcpy(buf + 1, data, len);
+        if (write(id.fd, buf, len + 1) != (ssize_t)(len+1) {
+            ret = BME280_E_COMM_FAIL;
+            break;
+        }
     }
-
     free(buf);
 
-    return BME280_OK;
+    return ret;
 }
 
 /*!
