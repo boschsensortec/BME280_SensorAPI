@@ -24,9 +24,9 @@ The sensor driver package includes bme280.c, bme280.h and bme280_defs.h files.
 SPI 3-wire is currently not supported in the API.
 ## Usage guide
 ### Initializing the sensor
-To initialize the sensor, user need to create a device structure. User can do this by 
-creating an instance of the structure bme280_dev. After creating the device strcuture, user 
-need to fill in the various parameters as shown below.
+To initialize the sensor, user needs to create a device structure. User can do this by
+creating an instance of the structure bme280_dev. After creating the device structure, user
+needs to fill in the various parameters as shown below.
 
 #### Example for SPI 4-Wire
 ``` c
@@ -40,7 +40,7 @@ dev.intf_ptr = &dev_addr;
 dev.intf = BME280_SPI_INTF;
 dev.read = user_spi_read;
 dev.write = user_spi_write;
-dev.delay_ms = user_delay_ms;
+dev.delay_us = user_delay_us;
 
 rslt = bme280_init(&dev);
 ```
@@ -54,43 +54,44 @@ dev.intf_ptr = &dev_addr;
 dev.intf = BME280_I2C_INTF;
 dev.read = user_i2c_read;
 dev.write = user_i2c_write;
-dev.delay_ms = user_delay_ms;
+dev.delay_us = user_delay_us;
 
 rslt = bme280_init(&dev);
 ```
-Regarding compensation functions for temperature,pressure and humidity we have two implementations.
+Regarding compensation functions for temperature, pressure and humidity we have two implementations.
 1) Double precision floating point version
-2) Integer version
+2) Integer versions
 
-By default, integer version is used in the API. If the user needs the floating point version, the user has to uncomment BME280_FLOAT_ENABLE macro in bme280_defs.h file or add that to the compiler flags.
+By default, BME280_FLOAT_ENABLE i.e. double precision floating point version is used in the API.
+If the user needs an integer version, the user has to define BME280_64BIT_ENABLE or BME280_32BIT_ENABLE macro in bme280_defs.h file or add that to the compiler flags.
 
 In integer compensation functions, we also have below two implementations for pressure.
 1) For 32 bit machine.
 2) For 64 bit machine.
 
-By default, 64 bit variant is used in the API. If the user wants 32 bit variant, the user can disable the
-macro BME280_64BIT_ENABLE in bme280_defs.h file.
+When using integer versions the 64 bit variant is recommended to use in the API. If the user wants 32 bit variant, the user can define the
+macro BME280_32BIT_ENABLE in bme280_defs.h file.
 
 ### Sensor data units
-> The sensor data units depends on the following macros being enabled or not, 
+> The sensor data units depends on the following macros being enabled or not,
 > (in bme280_defs.h file or as compiler macros)
 >   * BME280_FLOAT_ENABLE
 >   * BME280_64BIT_ENABLE
 
-In case of the macro "BME280_FLOAT_ENABLE" enabled,
+In case of the macro "BME280_FLOAT_ENABLE" enabled (default),
 The outputs are in double and the units are
 
     - °C for temperature
     - % relative humidity
     - Pascal for pressure
 
-In case if "BME280_FLOAT_ENABLE" is not enabled, then it is
+In case if "BME280_FLOAT_ENABLE" is _not_ enabled, then it is
 
     - int32_t for temperature with the units 100 * °C
     - uint32_t for humidity with the units 1024 * % relative humidity
     - uint32_t for pressure
-         If macro "BME280_64BIT_ENABLE" is enabled, which it is by default, the unit is 100 * Pascal
-         If this macro is disabled, Then the unit is in Pascal
+         If macro "BME280_64BIT_ENABLE" is enabled, the unit is 100 * Pascal
+         If macro "BME280_32BIT_ENABLE" is enabled, then the unit is in Pascal
 
 ### Stream sensor data
 #### Stream sensor data in forced mode
@@ -100,7 +101,7 @@ int8_t stream_sensor_data_forced_mode(struct bme280_dev *dev)
 {
     int8_t rslt;
     uint8_t settings_sel;
-	uint32_t req_delay;
+    uint32_t req_delay;
     struct bme280_data comp_data;
 
     /* Recommended mode of operation: Indoor navigation */
@@ -112,9 +113,9 @@ int8_t stream_sensor_data_forced_mode(struct bme280_dev *dev)
     settings_sel = BME280_OSR_PRESS_SEL | BME280_OSR_TEMP_SEL | BME280_OSR_HUM_SEL | BME280_FILTER_SEL;
 
     rslt = bme280_set_sensor_settings(settings_sel, dev);
-	
-	/*Calculate the minimum delay required between consecutive measurement based upon the sensor enabled
-     *  and the oversampling configuration. */
+
+    /* Calculate the minimum delay in microseconds required between consecutive measurements
+     * based upon the sensor enabled and oversampling configuration. */
     req_delay = bme280_cal_meas_delay(&dev->settings);
 
     printf("Temperature, Pressure, Humidity\r\n");
@@ -122,7 +123,7 @@ int8_t stream_sensor_data_forced_mode(struct bme280_dev *dev)
     while (1) {
         rslt = bme280_set_sensor_mode(BME280_FORCED_MODE, dev);
         /* Wait for the measurement to complete and print data @25Hz */
-        dev->delay_ms(req_delay, dev->intf_ptr);
+        dev->delay_us(req_delay, dev->intf_ptr);
         rslt = bme280_get_sensor_data(BME280_ALL, &comp_data, dev);
         print_sensor_data(&comp_data);
     }
@@ -164,7 +165,7 @@ int8_t stream_sensor_data_normal_mode(struct bme280_dev *dev)
 	printf("Temperature, Pressure, Humidity\r\n");
 	while (1) {
 		/* Delay while the sensor completes a measurement */
-		dev->delay_ms(70, dev->intf_ptr);
+		dev->delay_us(70000, dev->intf_ptr);
 		rslt = bme280_get_sensor_data(BME280_ALL, &comp_data, dev);
 		print_sensor_data(&comp_data);
 	}
@@ -185,11 +186,11 @@ void print_sensor_data(struct bme280_data *comp_data)
 ### Templates for function pointers
 ``` c
 
-void user_delay_ms(uint32_t period, void *intf_ptr)
+void user_delay_us(uint32_t period, void *intf_ptr)
 {
     /*
      * Return control or wait,
-     * for a period amount of milliseconds
+     * for a period amount of microseconds
      */
 }
 
@@ -219,7 +220,7 @@ int8_t user_spi_read(uint8_t reg_addr, uint8_t *reg_data, uint32_t len, void *in
     return rslt;
 }
 
-int8_t user_spi_write(uint8_t reg_addr, uint8_t *reg_data, uint32_t len, void *intf_ptr)
+int8_t user_spi_write(uint8_t reg_addr, const uint8_t *reg_data, uint32_t len, void *intf_ptr)
 {
     int8_t rslt = 0; /* Return 0 for Success, non-zero for failure */
 
@@ -272,7 +273,7 @@ int8_t user_i2c_read(uint8_t reg_addr, uint8_t *reg_data, uint32_t len, void *in
     return rslt;
 }
 
-int8_t user_i2c_write(uint8_t reg_addr, uint8_t *reg_data, uint32_t len, void *intf_ptr)
+int8_t user_i2c_write(uint8_t reg_addr, const uint8_t *reg_data, uint32_t len, void *intf_ptr)
 {
     int8_t rslt = 0; /* Return 0 for Success, non-zero for failure */
 
@@ -296,5 +297,3 @@ int8_t user_i2c_write(uint8_t reg_addr, uint8_t *reg_data, uint32_t len, void *i
 
     return rslt;
 }
-
-```
