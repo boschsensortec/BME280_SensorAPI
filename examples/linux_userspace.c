@@ -20,10 +20,10 @@
  * \include linux_userspace.c
  */
 
-/* For compiling not with Beagle Bone Black (tested) uncomment following line:
+/* For compiling not with Beagle Bone Black (tested) uncomment following line: */
 #define USE_IOCTL
 
-#if define __KERNEL__ || define USE_IOCTL
+#if defined __KERNEL__ || defined USE_IOCTL
 #include <linux/i2c-dev.h>
 #include <sys/ioctl.h>
 #endif
@@ -160,7 +160,7 @@ int main(int argc, char* argv[])
         exit(1);
     }
 
-#if define __KERNEL__ || define USE_IOCTL
+#if defined __KERNEL__ || defined USE_IOCTL
     if (ioctl(id.fd, I2C_SLAVE, id.dev_addr) < 0)
     {
         fprintf(stderr, "Failed to acquire bus access and/or talk to slave.\n");
@@ -205,10 +205,13 @@ int8_t user_i2c_read(uint8_t reg_addr, uint8_t *data, uint32_t len, void *intf_p
     id = *((struct identifier *)intf_ptr);
 
     if (write(id.fd, &reg_addr, 1) != 1)
+    {
         return BME280_E_COMM_FAIL;
+    }
     if (read(id.fd, data, len) != (ssize_t)len)
+    {
         return BME280_E_COMM_FAIL;
-
+    }
     return BME280_OK;
 }
 
@@ -235,15 +238,19 @@ int8_t user_i2c_write(uint8_t reg_addr, const uint8_t *data, uint32_t len, void 
 
     buf = malloc(len + 1);
     if (buf == NULL)    /* could not allocate enough memory */
+    {
         return BME280_E_NULL_PTR;
-    while(0) {
+    }
+    do
+    {
         buf[0] = reg_addr;
         memcpy(buf + 1, data, len);
-        if (write(id.fd, buf, len + 1) != (ssize_t)(len+1) {
+        if (write(id.fd, buf, len + 1) != (ssize_t)(len+1))
+        {
             ret = BME280_E_COMM_FAIL;
             break;
         }
-    }
+    } while(0);
     free(buf);
 
     return ret;
