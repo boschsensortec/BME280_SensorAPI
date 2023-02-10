@@ -24,9 +24,9 @@ The sensor driver package includes bme280.c, bme280.h and bme280_defs.h files.
 SPI 3-wire is currently not supported in the API.
 ## Usage guide
 ### Initializing the sensor
-To initialize the sensor, user need to create a device structure. User can do this by
+To initialize the sensor, user needs to create a device structure. User can do this by
 creating an instance of the structure bme280_dev. After creating the device structure, user
-need to fill in the various parameters as shown below.
+needs to fill in the various parameters as shown below.
 
 #### Example for SPI 4-Wire
 ``` c
@@ -297,4 +297,3 @@ int8_t user_i2c_write(uint8_t reg_addr, const uint8_t *reg_data, uint32_t len, v
 
     return rslt;
 }
-
