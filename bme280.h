@@ -31,8 +31,8 @@
 * POSSIBILITY OF SUCH DAMAGE.
 *
 * @file       bme280.h
-* @date       2020-03-28
-* @version    v3.5.0
+* @date       2020-12-17
+* @version    v3.5.1
 *
 */
 
@@ -46,8 +46,8 @@
  * and  <a href="https://github.com/BoschSensortec/BME280_driver">Sensor API Source Code</a>
  */
 
-#ifndef BME280_H_
-#define BME280_H_
+#ifndef _BME280_H
+#define _BME280_H
 
 /*! CPP guard */
 #ifdef __cplusplus
@@ -94,7 +94,7 @@ int8_t bme280_init(struct bme280_dev *dev);
  * \ingroup bme280ApiRegister
  * \page bme280_api_bme280_set_regs bme280_set_regs
  * \code
- * int8_t bme280_set_regs(const uint8_t reg_addr, const uint8_t *reg_data, uint8_t len, struct bme280_dev *dev);
+ * int8_t bme280_set_regs(const uint8_t reg_addr, const uint8_t *reg_data, uint32_t len, struct bme280_dev *dev);
  * \endcode
  * @details This API writes the given data to the register address of the sensor
  *
@@ -111,13 +111,13 @@ int8_t bme280_init(struct bme280_dev *dev);
  * @retval < 0 -> Fail.
  *
  */
-int8_t bme280_set_regs(uint8_t *reg_addr, const uint8_t *reg_data, uint8_t len, struct bme280_dev *dev);
+int8_t bme280_set_regs(uint8_t *reg_addr, const uint8_t *reg_data, uint32_t len, struct bme280_dev *dev);
 
 /*!
  * \ingroup bme280ApiRegister
  * \page bme280_api_bme280_get_regs bme280_get_regs
  * \code
- * int8_t bme280_get_regs(uint8_t reg_addr, uint8_t *reg_data, uint8_t len, struct bme280_dev *dev);
+ * int8_t bme280_get_regs(uint8_t reg_addr, uint8_t *reg_data, uint32_t len, struct bme280_dev *dev);
  * \endcode
  * @details This API reads the data from the given register address of sensor.
  *
@@ -133,7 +133,7 @@ int8_t bme280_set_regs(uint8_t *reg_addr, const uint8_t *reg_data, uint8_t len, 
  * @retval < 0 -> Fail.
  *
  */
-int8_t bme280_get_regs(uint8_t reg_addr, uint8_t *reg_data, uint16_t len, struct bme280_dev *dev);
+int8_t bme280_get_regs(uint8_t reg_addr, uint8_t *reg_data, uint32_t len, struct bme280_dev *dev);
 
 /**
  * \ingroup bme280
@@ -145,26 +145,29 @@ int8_t bme280_get_regs(uint8_t reg_addr, uint8_t *reg_data, uint16_t len, struct
  * \ingroup bme280ApiSensorSettings
  * \page bme280_api_bme280_set_sensor_settings bme280_set_sensor_settings
  * \code
- * int8_t bme280_set_sensor_settings(uint8_t desired_settings, const struct bme280_dev *dev);
+ * int8_t bme280_set_sensor_settings(uint8_t desired_settings, const struct bme280_settings *settings, struct bme280_dev *dev);
  * \endcode
  * @details This API sets the oversampling, filter and standby duration
  * (normal mode) settings in the sensor.
  *
- * @param[in] dev : Structure instance of bme280_dev.
- * @param[in] desired_settings : Variable used to select the settings which
- * are to be set in the sensor.
+ * @param[in] desired_settings  : Variable used to select the settings which
+ *                                are to be set in the sensor.
+ * @param[in] settings          : Structure instance of bme280_settings.
+ * @param[in] dev               : Structure instance of bme280_dev.
  *
  * @note : Below are the macros to be used by the user for selecting the
  * desired settings. User can do OR operation of these macros for configuring
  * multiple settings.
  *
- * Macros         |   Functionality
+ *@verbatim
+ * Macros                 |   Functionality
  * -----------------------|----------------------------------------------
- * BME280_OSR_PRESS_SEL    |   To set pressure oversampling.
- * BME280_OSR_TEMP_SEL     |   To set temperature oversampling.
- * BME280_OSR_HUM_SEL    |   To set humidity oversampling.
- * BME280_FILTER_SEL     |   To set filter setting.
- * BME280_STANDBY_SEL  |   To set standby duration setting.
+ * BME280_SEL_OSR_PRESS   |   To set pressure oversampling.
+ * BME280_SEL_OSR_TEMP    |   To set temperature oversampling.
+ * BME280_SEL_OSR_HUM     |   To set humidity oversampling.
+ * BME280_SEL_FILTER      |   To set filter setting.
+ * BME280_SEL_STANDBY     |   To set standby duration setting.
+ *@endverbatim
  *
  * @return Result of API execution status
  *
@@ -173,18 +176,21 @@ int8_t bme280_get_regs(uint8_t reg_addr, uint8_t *reg_data, uint16_t len, struct
  * @retval < 0 -> Fail.
  *
  */
-int8_t bme280_set_sensor_settings(uint8_t desired_settings, struct bme280_dev *dev);
+int8_t bme280_set_sensor_settings(uint8_t desired_settings,
+                                  const struct bme280_settings *settings,
+                                  struct bme280_dev *dev);
 
 /*!
  * \ingroup bme280ApiSensorSettings
  * \page bme280_api_bme280_get_sensor_settings bme280_get_sensor_settings
  * \code
- * int8_t bme280_get_sensor_settings(struct bme280_dev *dev);
+ * int8_t bme280_get_sensor_settings(struct bme280_settings *settings, struct bme280_dev *dev);
  * \endcode
  * @details This API gets the oversampling, filter and standby duration
  * (normal mode) settings from the sensor.
  *
- * @param[in,out] dev : Structure instance of bme280_dev.
+ * @param[in] settings  : Structure instance of bme280_settings.
+ * @param[in,out] dev   : Structure instance of bme280_dev.
  *
  * @return Result of API execution status
  *
@@ -193,7 +199,7 @@ int8_t bme280_set_sensor_settings(uint8_t desired_settings, struct bme280_dev *d
  * @retval < 0 -> Fail.
  *
  */
-int8_t bme280_get_sensor_settings(struct bme280_dev *dev);
+int8_t bme280_get_sensor_settings(struct bme280_settings *settings, struct bme280_dev *dev);
 
 /**
  * \ingroup bme280
@@ -209,14 +215,16 @@ int8_t bme280_get_sensor_settings(struct bme280_dev *dev);
  * \endcode
  * @details This API sets the power mode of the sensor.
  *
- * @param[in] dev : Structure instance of bme280_dev.
  * @param[in] sensor_mode : Variable which contains the power mode to be set.
+ * @param[in] dev         : Structure instance of bme280_dev.
  *
- *    sensor_mode           |   Macros
- * ---------------------|-------------------
- *     0                | BME280_SLEEP_MODE
- *     1                | BME280_FORCED_MODE
- *     3                | BME280_NORMAL_MODE
+ *@verbatim
+ *    sensor_mode       |      Macros
+ * ---------------------|-------------------------
+ *     0                | BME280_POWERMODE_SLEEP
+ *     1                | BME280_POWERMODE_FORCED
+ *     3                | BME280_POWERMODE_NORMAL
+ *@endverbatim
  *
  * @return Result of API execution status
  *
@@ -231,18 +239,20 @@ int8_t bme280_set_sensor_mode(uint8_t sensor_mode, struct bme280_dev *dev);
  * \ingroup bme280ApiSensorMode
  * \page bme280_api_bme280_get_sensor_mode bme280_get_sensor_mode
  * \code
- * int8_t bme280_get_sensor_mode(uint8_t *sensor_mode, const struct bme280_dev *dev);
+ * int8_t bme280_get_sensor_mode(uint8_t *sensor_mode, struct bme280_dev *dev);
  * \endcode
  * @details This API gets the power mode of the sensor.
  *
- * @param[in] dev : Structure instance of bme280_dev.
  * @param[out] sensor_mode : Pointer variable to store the power mode.
+ * @param[in] dev          : Structure instance of bme280_dev.
  *
- *   sensor_mode            |   Macros
- * ---------------------|-------------------
- *     0                | BME280_SLEEP_MODE
- *     1                | BME280_FORCED_MODE
- *     3                | BME280_NORMAL_MODE
+ *@verbatim
+ *    sensor_mode       |      Macros
+ * ---------------------|-------------------------
+ *     0                | BME280_POWERMODE_SLEEP
+ *     1                | BME280_POWERMODE_FORCED
+ *     3                | BME280_POWERMODE_NORMAL
+ *@endverbatim
  *
  * @return Result of API execution status
  *
@@ -297,15 +307,17 @@ int8_t bme280_soft_reset(struct bme280_dev *dev);
  * @param[in] sensor_comp : Variable which selects which data to be read from
  * the sensor.
  *
+ *@verbatim
  * sensor_comp |   Macros
  * ------------|-------------------
  *     1       | BME280_PRESS
  *     2       | BME280_TEMP
  *     4       | BME280_HUM
  *     7       | BME280_ALL
+ *@endverbatim
  *
  * @param[out] comp_data : Structure instance of bme280_data.
- * @param[in] dev : Structure instance of bme280_dev.
+ * @param[in] dev        : Structure instance of bme280_dev.
  *
  * @return Result of API execution status
  *
@@ -315,22 +327,6 @@ int8_t bme280_soft_reset(struct bme280_dev *dev);
  *
  */
 int8_t bme280_get_sensor_data(uint8_t sensor_comp, struct bme280_data *comp_data, struct bme280_dev *dev);
-
-/*!
- * \ingroup bme280ApiSensorData
- * \page bme280_api_bme280_parse_sensor_data bme280_parse_sensor_data
- * \code
- * void bme280_parse_sensor_data(const uint8_t *reg_data, struct bme280_uncomp_data *uncomp_data);
- * \endcode
- *  @details This API is used to parse the pressure, temperature and
- *  humidity data and store it in the bme280_uncomp_data structure instance.
- *
- *  @param[in] reg_data     : Contains register data which needs to be parsed
- *  @param[out] uncomp_data : Contains the uncompensated pressure, temperature
- *  and humidity data.
- *
- */
-void bme280_parse_sensor_data(const uint8_t *reg_data, struct bme280_uncomp_data *uncomp_data);
 
 /*!
  * \ingroup bme280ApiSensorData
@@ -346,12 +342,12 @@ void bme280_parse_sensor_data(const uint8_t *reg_data, struct bme280_uncomp_data
  * user.
  *
  * @param[in] sensor_comp : Used to select pressure and/or temperature and/or
- * humidity.
+ *                          humidity.
  * @param[in] uncomp_data : Contains the uncompensated pressure, temperature and
- * humidity data.
- * @param[out] comp_data : Contains the compensated pressure and/or temperature
- * and/or humidity data.
- * @param[in] calib_data : Pointer to the calibration data structure.
+ *                          humidity data.
+ * @param[out] comp_data  : Contains the compensated pressure and/or temperature
+ *                          and/or humidity data.
+ * @param[in] calib_data  : Pointer to bme280_calib_data
  *
  * @return Result of API execution status.
  *
@@ -375,21 +371,27 @@ int8_t bme280_compensate_data(uint8_t sensor_comp,
  * \ingroup bme280ApiSensorDelay
  * \page bme280_api_bme280_cal_meas_delay bme280_cal_meas_delay
  * \code
- * uint32_t bme280_cal_meas_delay(const struct bme280_settings *settings);
+ * uint32_t bme280_cal_meas_delay(uint32_t *max_delay, const struct bme280_settings *settings);
  * \endcode
- * @brief This API is used to calculate the maximum delay in milliseconds required for the
- * temperature/pressure/humidity(which ever are enabled) measurement to complete.
+ *
+ * @details This API is used to calculate the maximum delay in microseconds required for the
+ * temperature/pressure/humidity(whichever are enabled) measurement to complete.
  * The delay depends upon the number of sensors enabled and their oversampling configuration.
  *
- * @param[in] settings : contains the oversampling configurations.
+ * @param[out] max_delay  : Delay required in microseconds.
+ * @param[in] settings    : Contains the oversampling configurations.
  *
- * @return delay required in milliseconds.
+ * @return Result of API execution status.
+ *
+ * @retval   0 -> Success.
+ * @retval > 0 -> Warning.
+ * @retval < 0 -> Fail.
  *
  */
-uint32_t bme280_cal_meas_delay(const struct bme280_settings *settings);
+int8_t bme280_cal_meas_delay(uint32_t *max_delay, const struct bme280_settings *settings);
 
 #ifdef __cplusplus
 }
 #endif /* End of CPP guard */
-#endif /* BME280_H_ */
+#endif /* _BME280_H */
 /** @}*/
