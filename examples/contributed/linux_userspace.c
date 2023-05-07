@@ -200,9 +200,10 @@ int8_t user_i2c_read(uint8_t reg_addr, uint8_t *data, uint32_t len, void *intf_p
     struct identifier id;
 
     id = *((struct identifier *)intf_ptr);
-
     write(id.fd, &reg_addr, 1);
-    read(id.fd, data, len);
+    if (read(id.fd, data, len) != len) {
+        return -1;
+    }
 
     return 0;
 }
