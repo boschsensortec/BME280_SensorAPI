@@ -246,7 +246,7 @@ void print_sensor_data(struct bme280_data *comp_data)
 {
     float temp, press, hum;
 
-#ifdef BME280_FLOAT_ENABLE
+#ifdef BME280_DOUBLE_ENABLE
     temp = comp_data->temperature;
     press = 0.01 * comp_data->pressure;
     hum = comp_data->humidity;
